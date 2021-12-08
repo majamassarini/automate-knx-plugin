@@ -10,11 +10,13 @@ class MsgNotEncoded(Exception):
 
 
 class Client(asyncio.Protocol):
-    def __init__(self, knx_state: "knx_stack.State", tasks: Iterable["Callable"]):
+
+    def __init__(self, on_con_lost, knx_state: "knx_stack.State", tasks: Iterable["Callable"]):
         self._loop = asyncio.get_event_loop()
         self._transport = None
         self._tasks = set(tasks)
         self._state = knx_state
+        self._on_con_lost = on_con_lost
 
         self.logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ class Client(asyncio.Protocol):
 
     def connection_lost(self, exc):
         self.logger.error("Connection lost: {}".format(str(exc)))
+        self._on_con_lost.set_result(True)
         self._transport = None
 
     def error_received(self, exc):

@@ -16,6 +16,7 @@ class Client(Parent):
 
     def __init__(
         self,
+        on_con_close,
         knx_state: "knx_stack.State",
         tasks: Iterable["Callable"],
         local_addr: str,
@@ -23,7 +24,7 @@ class Client(Parent):
         remote_addr: str,
         remote_port: int,
     ):
-        super(Client, self).__init__(knx_state, tasks)
+        super(Client, self).__init__(on_con_close, knx_state, tasks)
         self._local_addr = local_addr
         self._local_port = local_port
         self._remote_addr = remote_addr

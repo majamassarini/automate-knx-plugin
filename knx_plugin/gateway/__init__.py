@@ -58,18 +58,23 @@ class Gateway(home.protocol.Gateway):
         self._associate(descriptions)
 
     async def run(self, other_tasks: Iterable[Callable]) -> None:
-        self._protocol_instance = self._client(
-            self._knx_state, self._wrap_tasks(other_tasks)
-        )
         while True:
+            on_con_lost = self._loop.create_future()
+            self._protocol_instance = self._client(
+                on_con_lost, self._knx_state, self._wrap_tasks(other_tasks)
+            )
             try:
                 (self._transport, _) = await self._loop.create_connection(
                     lambda: self._protocol_instance, self._host, self._port
                 )
-                break
+                try:
+                    await on_con_lost
+                finally:
+                    self._transport.close()
             except (TimeoutError, OSError) as e:
                 self.logger.fatal(e)
                 await asyncio.sleep(60)
+
 
     @staticmethod
     def make_trigger(
