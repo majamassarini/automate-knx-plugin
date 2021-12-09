@@ -203,7 +203,7 @@ class Report(Trigger):
     ...                         home.appliance.thermostat.presence.state.off.State([0.0,
     ...                                                                       home.event.clima.season.Event.Winter,
     ...                                                                       home.event.clima.command.Event.On]))
-    Off (computed from events: 43.0, Setpoint: 20.0°, Keeping mode setpoint: 21.5°, home.event.clima.season.Event.Winter, home.event.clima.command.Event.Off, home.event.presence.Event.Off, home.appliance.thermostat.presence.event.forced.event.Event.Not) and disabled events set()
+    Off (computed from events: 43.0, Setpoint: 22.5°, Keeping mode setpoint: 21.5°, home.event.clima.season.Event.Winter, home.event.clima.command.Event.Off, home.event.presence.Event.Off, home.appliance.thermostat.presence.event.forced.event.Event.Not) and disabled events set()
     """
 
     DPT = {
@@ -230,6 +230,6 @@ class Report(Trigger):
         new_state = old_state.next(season)
         new_state = new_state.next(mode)
         new_state = new_state.next(temperature)
-        new_state.setpoint = setpoint
+        # new_state.setpoint = setpoint  # change it just through the web ui or scheduled jobs
 
         return new_state
