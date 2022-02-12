@@ -7,25 +7,6 @@ from knx_plugin.trigger import Always as Parent
 
 
 class Trigger(Parent):
-    def __init__(self, description, events, low_setpoint, high_setpoint):
-        super(Trigger, self).__init__(description, events)
-        self._low_setpoint = low_setpoint if low_setpoint else 20
-        self._high_setpoint = high_setpoint if high_setpoint else 22
-
-    @classmethod
-    def make(cls, addresses, events=None, low_setpoint=None, high_setpoint=None):
-        description = copy.deepcopy(cls.DPT)
-        dsc = cls(description, events, low_setpoint, high_setpoint)
-        dsc.addresses = addresses
-        return dsc
-
-    @classmethod
-    def make_from_yaml(
-        cls, addresses, events=None, low_setpoint=None, high_setpoint=None
-    ):
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
-        return cls(description, events, low_setpoint, high_setpoint)
 
     @staticmethod
     def _decode_winter_setpoint(command):
@@ -192,13 +173,13 @@ class Report(Trigger):
     >>> import home
     >>> import knx_plugin
     >>> import copy
-    >>> cmd = knx_plugin.trigger.custom_clima.Report.make_from_yaml([3202], [], 19, 20)
+    >>> cmd = knx_plugin.trigger.custom_clima.Report.make_from_yaml([3202], [])
     >>> cmd._asaps = [1]
     >>> cmd.dpt.value = 0x00E3E369
     >>> description = copy.copy(knx_plugin.trigger.custom_clima.Report.DPT)
     >>> description["addresses"] = [3202]
     >>> description["fields"]["funzionamento"] = "off"
-    >>> another_cmd = knx_plugin.trigger.custom_clima.Off(description, [], 12, 12)
+    >>> another_cmd = knx_plugin.trigger.custom_clima.Off(description, [])
     >>> cmd.make_new_state_from(another_cmd,
     ...                         home.appliance.thermostat.presence.state.off.State([0.0,
     ...                                                                       home.event.clima.season.Event.Winter,
