@@ -16,9 +16,11 @@ class Client(Parent):
         (reqs, cons, inds, others) = self.filter(msgs)
         for task in self._tasks:
             for msg in cons:
-                self._loop.create_task(task(msg))
+                self._loop.create_task(task(msg),
+                                       name="Knxusb confirmation data_received for {}".format(str(data)))
             for msg in inds:
-                self._loop.create_task(task(msg))
+                self._loop.create_task(task(msg),
+                                       name="Knxusb indication data_received for {}".format(str(data)))
 
     def decode(self, data):
         msgs = list()
