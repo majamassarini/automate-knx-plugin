@@ -34,14 +34,15 @@ class Gateway(Parent):
                 self._wrap_tasks(other_tasks),
                 self._nat_local_host,
                 self._nat_local_port,
+                self._local_host,
+                self._local_port,
                 self._host,
                 self._port,
             )
             try:
                 (self._transport, _) = await self._loop.create_datagram_endpoint(
                     lambda: self._protocol_instance,
-                    local_addr=(self._local_host, self._local_port),
-                    remote_addr=(self._host, self._port),
+                    local_addr=(self._nat_local_host, self._nat_local_port),
                 )
                 try:
                     await on_con_lost

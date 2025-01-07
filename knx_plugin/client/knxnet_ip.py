@@ -19,12 +19,16 @@ class Client(Parent):
         on_con_close,
         knx_state: "knx_stack.State",
         tasks: Iterable["Callable"],
+        nat_local_addr: str,
+        nat_local_port: int,
         local_addr: str,
         local_port: int,
         remote_addr: str,
         remote_port: int,
     ):
         super(Client, self).__init__(on_con_close, knx_state, tasks)
+        self._nat_local_addr = nat_local_addr
+        self._nat_local_port = nat_local_port
         self._local_addr = local_addr
         self._local_port = local_port
         self._remote_addr = remote_addr
