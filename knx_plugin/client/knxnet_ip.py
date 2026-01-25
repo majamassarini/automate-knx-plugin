@@ -36,8 +36,12 @@ class Client(Parent):
         self._connect_timeout = None
         self._tunneling_request_timeout = None
         self._connect_alive_timeout = None
+        self._connect_alive_response_timeout = None
         self._retries = 0
         self._got_a_confirmation = False
+        self._got_alive_response = False
+        self._missed_keepalives = 0
+        self.MAX_MISSED_KEEPALIVES = 3
 
     def connection_made(self, transport):
         super(Client, self).connection_made(transport)
@@ -138,6 +142,20 @@ class Client(Parent):
                         knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
                     )
                 )
+        elif isinstance(msg, knx_stack.knxnet_ip.core.connectionstate.res.Msg):
+            # Received response to our keepalive request
+            self.logger.info("Received connectionstate response: {}".format(msg))
+            if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
+                self._got_alive_response = True
+                self._missed_keepalives = 0
+                self._connect_alive_response_timeout = None
+                self.logger.debug("Keepalive acknowledged, connection is healthy")
+            else:
+                self.logger.error(
+                    "Received connectionstate response with error {}".format(
+                        knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
+                    )
+                )
 
     async def manage_connect_timeout(self):
         while True:
@@ -188,25 +206,54 @@ class Client(Parent):
     async def manage_connect_alive_timeout(self):
         while True:
             try:
+                # Check if we're waiting for a keepalive response
+                if self._connect_alive_response_timeout:
+                    if (
+                        datetime.datetime.now() - self._connect_alive_response_timeout
+                    ) > datetime.timedelta(seconds=10):
+                        # No response received within 10 seconds
+                        if not self._got_alive_response:
+                            self._missed_keepalives += 1
+                            self.logger.warning(
+                                "Missed keepalive response (count: {}/{})".format(
+                                    self._missed_keepalives, self.MAX_MISSED_KEEPALIVES
+                                )
+                            )
+                            if self._missed_keepalives >= self.MAX_MISSED_KEEPALIVES:
+                                self.logger.error(
+                                    "Too many missed keepalives, forcing reconnection"
+                                )
+                                # Force close transport to trigger reconnection
+                                if self._transport:
+                                    self._transport.close()
+                                break
+                        self._connect_alive_response_timeout = None
+                        self._got_alive_response = False
+
+                # Check if it's time to send a new keepalive
                 if self._connect_alive_timeout:
                     if (
                         datetime.datetime.now() - self._connect_alive_timeout
                     ) > datetime.timedelta(
                         seconds=(knx_stack.knxnet_ip.CONNECTION_ALIVE_TIME / 2)
                     ):
-                        self.logger.info("Connect alive timeout expired")
+                        self.logger.info("Sending keepalive (connectionstate request)")
                         req_msg = knx_stack.knxnet_ip.core.connectionstate.req.Msg(
                             addr_control_endpoint=self._local_addr,
                             port_control_endpoint=self._local_port,
                         )
                         knx_msg = knx_stack.encode_msg(self._state, req_msg)
                         self._connect_alive_timeout = datetime.datetime.now()
-                        self._transport.sendto(
-                            self.encode(knx_msg), (self._remote_addr, self._remote_port)
-                        )
-                await asyncio.sleep(knx_stack.knxnet_ip.CONNECTION_ALIVE_TIME / 2)
+                        self._connect_alive_response_timeout = datetime.datetime.now()
+                        self._got_alive_response = False
+                        if self._transport:
+                            self._transport.sendto(
+                                self.encode(knx_msg), (self._remote_addr, self._remote_port)
+                            )
+                await asyncio.sleep(10)  # Check every 10 seconds
             except Exception as e:
-                self.logger.error(e)
+                self.logger.error("Error in manage_connect_alive_timeout: {}".format(e))
+                break
 
     async def disconnect(self):
         disconnect_req = knx_stack.knxnet_ip.core.disconnect.req.Msg(
