@@ -70,7 +70,8 @@ class Gateway(home.protocol.Gateway):
                 try:
                     await on_con_lost
                 finally:
-                    self._transport.close()
+                    if self._transport:
+                        self._transport.close()
             except (TimeoutError, OSError) as e:
                 self.logger.fatal(e)
                 await asyncio.sleep(60)
