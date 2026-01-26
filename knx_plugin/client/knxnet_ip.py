@@ -45,6 +45,14 @@ class Client(Parent):
 
     def connection_made(self, transport):
         super(Client, self).connection_made(transport)
+        # Reset state for new connection
+        self._state.communication_channel_id = 0
+        self._state.sequence_counter_local = 0
+        self._state.sequence_counter_remote = 0
+        self._missed_keepalives = 0
+        self._got_a_confirmation = False
+        self._got_alive_response = False
+        self._retries = 0
         connect_req = knx_stack.knxnet_ip.core.connect.req.Msg(
             addr_control_endpoint=self._local_addr,
             port_control_endpoint=self._local_port,
