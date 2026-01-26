@@ -66,12 +66,16 @@ class Client(Parent):
 
     def decode(self, data):
         msgs = []
-        msg = knx_stack.knxnet_ip.Msg.make_from_str(data.hex())
-        self.logger.debug("received: {}".format(msg))
         try:
+            msg = knx_stack.knxnet_ip.Msg.make_from_str(data.hex())
+            self.logger.debug("received: {}".format(msg))
             msgs = knx_stack.decode_msg(self._state, msg)
         except TypeError as e:
-            self.logger.error(e)
+            self.logger.error("Failed to decode message: {}".format(e))
+            self.logger.debug("Raw data: {}".format(data.hex()))
+        except Exception as e:
+            self.logger.error("Unexpected error decoding message: {}".format(e))
+            self.logger.debug("Raw data: {}".format(data.hex()))
         return msgs
 
     def encode(self, msg):
@@ -92,6 +96,7 @@ class Client(Parent):
             for other in others:
                 self.manage_connect(other)
                 self.manage_server_tunneling_request(other)
+                self.manage_disconnect_request(other)
 
     async def write(self, msgs, *args):
         await self._wait_for_transport()
@@ -135,14 +140,16 @@ class Client(Parent):
 
     def manage_server_tunneling_request(self, msg):
         if isinstance(msg, knx_stack.decode.knxnet_ip.tunneling.req.Msg):
+            # Always send ACK, even if there's an error
+            ack_msg = knx_stack.knxnet_ip.tunneling.ack.Msg(
+                sequence_counter=msg.sequence_counter, status=msg.status
+            )
+            ack = knx_stack.encode_msg(self._state, ack_msg)
+            self._transport.sendto(
+                self.encode(ack), (self._remote_addr, self._remote_port)
+            )
+
             if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
-                ack_msg = knx_stack.knxnet_ip.tunneling.ack.Msg(
-                    sequence_counter=msg.sequence_counter, status=msg.status
-                )
-                ack = knx_stack.encode_msg(self._state, ack_msg)
-                self._transport.sendto(
-                    self.encode(ack), (self._remote_addr, self._remote_port)
-                )
                 self._connect_alive_timeout = datetime.datetime.now()
             else:
                 self.logger.error(
@@ -150,6 +157,12 @@ class Client(Parent):
                         knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
                     )
                 )
+                # E_SEQUENCE_NUMBER or other errors indicate connection issues
+                # Force reconnection by closing transport
+                if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_SEQUENCE_NUMBER:
+                    self.logger.warning("Sequence number mismatch, forcing reconnection")
+                    if self._transport:
+                        self._transport.close()
         elif isinstance(msg, knx_stack.knxnet_ip.core.connectionstate.res.Msg):
             # Received response to our keepalive request
             self.logger.info("Received connectionstate response: {}".format(msg))
@@ -164,6 +177,23 @@ class Client(Parent):
                         knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
                     )
                 )
+
+    def manage_disconnect_request(self, msg):
+        if isinstance(msg, knx_stack.knxnet_ip.core.disconnect.req.Msg):
+            self.logger.warning("Received disconnect request from gateway: {}".format(msg))
+            # Send disconnect response
+            disconnect_res = knx_stack.knxnet_ip.core.disconnect.res.Msg(
+                communication_channel_id=self._state.communication_channel_id,
+                status=knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR
+            )
+            res_msg = knx_stack.encode_msg(self._state, disconnect_res)
+            self._transport.sendto(
+                self.encode(res_msg), (self._remote_addr, self._remote_port)
+            )
+            self.logger.info("Sent disconnect response, closing connection")
+            # Close transport to trigger reconnection
+            if self._transport:
+                self._transport.close()
 
     async def manage_connect_timeout(self):
         while True:
