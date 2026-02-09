@@ -43,6 +43,14 @@ class Client(Parent):
         self._missed_keepalives = 0
         self.MAX_MISSED_KEEPALIVES = 3
 
+        # Exponential backoff for reconnection
+        self._reconnect_attempt = 0
+        self._max_reconnect_attempts = 10
+        self._base_reconnect_delay = 1  # Start with 1 second
+        self._max_reconnect_delay = 300  # Cap at 5 minutes
+        self._last_connection_success = None
+        self._reconnect_task = None
+
     def connection_made(self, transport):
         super(Client, self).connection_made(transport)
         # Reset state for new connection
@@ -53,6 +61,11 @@ class Client(Parent):
         self._got_a_confirmation = False
         self._got_alive_response = False
         self._retries = 0
+
+        # Reset reconnection backoff on successful connection
+        self._reconnect_attempt = 0
+        self._last_connection_success = datetime.datetime.now()
+
         connect_req = knx_stack.knxnet_ip.core.connect.req.Msg(
             addr_control_endpoint=self._local_addr,
             port_control_endpoint=self._local_port,
@@ -71,11 +84,38 @@ class Client(Parent):
             self.logger.debug("received: {}".format(msg))
             msgs = knx_stack.decode_msg(self._state, msg)
         except TypeError as e:
+            # Enhanced logging for HPAI parsing errors
             self.logger.error("Failed to decode message: {}".format(e))
-            self.logger.debug("Raw data: {}".format(data.hex()))
+            self.logger.error(
+                "Message decode failure details:\n"
+                "  Error type: TypeError\n"
+                "  Data length: {} bytes\n"
+                "  Hex dump: {}\n"
+                "  ASCII (errors='replace'): {}".format(
+                    len(data),
+                    data.hex(),
+                    data.decode('ascii', errors='replace')
+                )
+            )
+            # Check if it looks like a malformed HPAI
+            if b"HPAI" in str(e) or "No HPAI message" in str(e):
+                self.logger.warning(
+                    "HPAI parsing error detected - possible protocol mismatch or corruption"
+                )
         except Exception as e:
             self.logger.error("Unexpected error decoding message: {}".format(e))
-            self.logger.debug("Raw data: {}".format(data.hex()))
+            self.logger.error(
+                "Unexpected decode failure details:\n"
+                "  Error type: {}\n"
+                "  Data length: {} bytes\n"
+                "  Hex dump: {}\n"
+                "  ASCII (errors='replace'): {}".format(
+                    type(e).__name__,
+                    len(data),
+                    data.hex(),
+                    data.decode('ascii', errors='replace')
+                )
+            )
         return msgs
 
     def encode(self, msg):
@@ -123,6 +163,17 @@ class Client(Parent):
                 if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
                     self._connect_alive_timeout = datetime.datetime.now()
                     self._loop.create_task(self.manage_connect_alive_timeout())
+
+                    # Connection successful - reset reconnection backoff
+                    if self._reconnect_attempt > 0:
+                        self.logger.info(
+                            "Connection restored after {} reconnection attempts".format(
+                                self._reconnect_attempt
+                            )
+                        )
+                    self._reconnect_attempt = 0
+                    self._last_connection_success = datetime.datetime.now()
+
                     self.logger.info("Knxnet ip client connected")
                 else:
                     raise KnxnetIPClientException(
@@ -152,17 +203,21 @@ class Client(Parent):
             if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
                 self._connect_alive_timeout = datetime.datetime.now()
             else:
+                error_code = knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
                 self.logger.error(
-                    "Received server tunneling request with error {}".format(
-                        knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
-                    )
+                    "Received server tunneling request with error {}".format(error_code)
                 )
-                # E_SEQUENCE_NUMBER or other errors indicate connection issues
-                # Force reconnection by closing transport
-                if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_SEQUENCE_NUMBER:
-                    self.logger.warning("Sequence number mismatch, forcing reconnection")
+                # Error 3 typically means E_CONNECTION_ID - server doesn't recognize our connection
+                # We need a full reconnection with exponential backoff
+                if msg.status == 3 or msg.status == knx_stack.knxnet_ip.ErrorCodes.E_SEQUENCE_NUMBER:
+                    self.logger.warning(
+                        "Connection error (code: {}) - scheduling reconnection with backoff".format(
+                            msg.status
+                        )
+                    )
+                    # Schedule reconnection with exponential backoff
                     if self._transport:
-                        self._transport.close()
+                        self._loop.create_task(self._reconnect_with_backoff())
         elif isinstance(msg, knx_stack.knxnet_ip.core.connectionstate.res.Msg):
             # Received response to our keepalive request
             self.logger.info("Received connectionstate response: {}".format(msg))
@@ -259,11 +314,11 @@ class Client(Parent):
                             )
                             if self._missed_keepalives >= self.MAX_MISSED_KEEPALIVES:
                                 self.logger.error(
-                                    "Too many missed keepalives, forcing reconnection"
+                                    "Too many missed keepalives, scheduling reconnection with backoff"
                                 )
-                                # Force close transport to trigger reconnection
+                                # Schedule reconnection with exponential backoff
                                 if self._transport:
-                                    self._transport.close()
+                                    self._loop.create_task(self._reconnect_with_backoff())
                                 break
                         self._connect_alive_response_timeout = None
                         self._got_alive_response = False
@@ -292,6 +347,54 @@ class Client(Parent):
             except Exception as e:
                 self.logger.error("Error in manage_connect_alive_timeout: {}".format(e))
                 break
+
+    async def _reconnect_with_backoff(self):
+        """
+        Implements exponential backoff for reconnections.
+        Delays: 1s, 2s, 4s, 8s, 16s, 32s, 64s, 128s, 256s, 300s (max)
+        """
+        if self._reconnect_task and not self._reconnect_task.done():
+            self.logger.debug("Reconnection already in progress, skipping")
+            return
+
+        self._reconnect_task = asyncio.current_task()
+
+        # Calculate delay with exponential backoff
+        delay = min(
+            self._base_reconnect_delay * (2 ** self._reconnect_attempt),
+            self._max_reconnect_delay
+        )
+
+        self._reconnect_attempt += 1
+
+        if self._reconnect_attempt > self._max_reconnect_attempts:
+            self.logger.critical(
+                "Maximum reconnection attempts ({}) reached - giving up".format(
+                    self._max_reconnect_attempts
+                )
+            )
+            # Close transport permanently
+            if self._transport:
+                self._transport.close()
+            return
+
+        self.logger.warning(
+            "Reconnection attempt {}/{} - waiting {}s before reconnecting".format(
+                self._reconnect_attempt,
+                self._max_reconnect_attempts,
+                delay
+            )
+        )
+
+        # Wait for backoff delay
+        await asyncio.sleep(delay)
+
+        # Close current transport (if still open) to trigger reconnection
+        if self._transport:
+            self.logger.info("Closing transport to trigger reconnection")
+            self._transport.close()
+
+        self._reconnect_task = None
 
     async def disconnect(self):
         disconnect_req = knx_stack.knxnet_ip.core.disconnect.req.Msg(
