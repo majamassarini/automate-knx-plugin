@@ -92,8 +92,8 @@ class TestDisconnectHandling(unittest.TestCase):
         # Verify ACK was sent (transport.sendto called)
         self.assertTrue(client._transport.sendto.called)
 
-        # Verify transport was closed due to sequence error
-        self.assertTrue(client._transport.close.called)
+        # Verify reconnection was scheduled (transport close happens inside _reconnect_with_backoff)
+        self.assertTrue(client._loop.create_task.called)
 
     @unittest.mock.patch('asyncio.get_event_loop')
     def test_manage_server_tunneling_request_success(self, mock_get_event_loop):

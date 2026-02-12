@@ -389,6 +389,17 @@ class Client(Parent):
         # Wait for backoff delay
         await asyncio.sleep(delay)
 
+        # Send disconnect request to cleanly terminate old connection on server
+        # This prevents sequence number mismatches when reconnecting
+        if self._transport and self._state and self._state.communication_channel_id is not None:
+            try:
+                self.logger.info("Sending disconnect request before reconnection")
+                await self.disconnect()
+                # Give server time to process disconnect
+                await asyncio.sleep(0.1)
+            except Exception as e:
+                self.logger.warning("Failed to send disconnect request: {}".format(e))
+
         # Close current transport (if still open) to trigger reconnection
         if self._transport:
             self.logger.info("Closing transport to trigger reconnection")
