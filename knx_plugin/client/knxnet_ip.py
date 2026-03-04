@@ -2,7 +2,7 @@ import datetime
 import asyncio
 
 import knx_stack
-from typing import Iterable, Callable
+from collections.abc import Callable, Iterable
 from knx_plugin.client import Client as Parent
 
 

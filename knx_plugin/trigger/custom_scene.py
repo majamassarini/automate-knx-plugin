@@ -1,6 +1,5 @@
 import copy
 
-from typing import List
 
 import home
 import knx_stack
@@ -19,7 +18,7 @@ class Equal(Parent):
     DEFAULT_EVENTS = [home.event.scene.Event.Triggered]
 
     def __init__(
-        self, description: dict, events: List[home.Event] = None, index: int = None
+        self, description: dict, events: list[home.Event] = None, index: int = None
     ):
         description["fields"]["index"] = index if index else 0
         super(Equal, self).__init__(description, events)
@@ -27,8 +26,8 @@ class Equal(Parent):
     @classmethod
     def make(
         cls,
-        addresses: List[knx_stack.Address],
-        events: List[home.Event] = None,
+        addresses: list[knx_stack.Address],
+        events: list[home.Event] = None,
         index: int = None,
     ):
         description = copy.deepcopy(cls.DPT)
@@ -38,7 +37,7 @@ class Equal(Parent):
 
     @classmethod
     def make_from_yaml(
-        cls, addresses: List[int], events: List[home.Event] = None, index: int = None
+        cls, addresses: list[int], events: list[home.Event] = None, index: int = None
     ):
         description = copy.deepcopy(cls.DPT)
         description["addresses"] = addresses
