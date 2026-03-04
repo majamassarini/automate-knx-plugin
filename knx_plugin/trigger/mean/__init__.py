@@ -2,7 +2,6 @@ import copy
 import collections
 import functools
 
-from typing import List
 
 import home
 import knx_stack
@@ -14,7 +13,7 @@ class Mean(Trigger, home.protocol.Trigger):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
     ):
@@ -36,8 +35,8 @@ class Mean(Trigger, home.protocol.Trigger):
     @classmethod
     def make(
         cls,
-        addresses: List[knx_stack.Address],
-        events: List[home.Event] = None,
+        addresses: list[knx_stack.Address],
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
     ):
@@ -120,7 +119,7 @@ class InBetween(Mean):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
         range: int = None,
@@ -145,8 +144,8 @@ class InBetween(Mean):
     @classmethod
     def make(
         cls,
-        addresses: List[knx_stack.Address],
-        events: List[home.Event] = None,
+        addresses: list[knx_stack.Address],
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
         range: int = None,

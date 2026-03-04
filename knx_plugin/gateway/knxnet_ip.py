@@ -28,8 +28,9 @@ class Gateway(Parent):
         )
 
     async def run(self, other_tasks):
+        loop = asyncio.get_running_loop()
         while True:
-            on_con_lost = self._loop.create_future()
+            on_con_lost = loop.create_future()
             self._protocol_instance = self._client(
                 on_con_lost,
                 self._knx_state,
@@ -43,7 +44,7 @@ class Gateway(Parent):
             )
             try:
                 self.logger.info("Connecting to KNX gateway at {}:{}".format(self._host, self._port))
-                (self._transport, _) = await self._loop.create_datagram_endpoint(
+                (self._transport, _) = await loop.create_datagram_endpoint(
                     lambda: self._protocol_instance,
                     local_addr=(self._nat_local_host, self._nat_local_port),
                 )

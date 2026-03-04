@@ -1,7 +1,8 @@
 import asyncio
 import logging
 
-from typing import Iterable, Callable, Union
+from collections.abc import Callable, Iterable
+from typing import Union
 
 import home
 import knx_stack
@@ -30,7 +31,6 @@ class Gateway(home.protocol.Gateway):
         self._knx_state = None
         self._init_state()
 
-        self._loop = asyncio.get_event_loop()
         self.logger = logging.getLogger(__name__)
 
     def _init_state(self):
@@ -58,13 +58,14 @@ class Gateway(home.protocol.Gateway):
         self._associate(descriptions)
 
     async def run(self, other_tasks: Iterable[Callable]) -> None:
+        loop = asyncio.get_running_loop()
         while True:
-            on_con_lost = self._loop.create_future()
+            on_con_lost = loop.create_future()
             self._protocol_instance = self._client(
                 on_con_lost, self._knx_state, self._wrap_tasks(other_tasks)
             )
             try:
-                (self._transport, _) = await self._loop.create_connection(
+                (self._transport, _) = await loop.create_connection(
                     lambda: self._protocol_instance, self._host, self._port
                 )
                 try:

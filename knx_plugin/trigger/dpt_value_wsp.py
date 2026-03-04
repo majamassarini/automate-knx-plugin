@@ -1,4 +1,3 @@
-from typing import List
 
 import home
 
@@ -111,7 +110,7 @@ class Weak(LesserThan):
     def __init__(
         self,
         description: Description,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
     ):

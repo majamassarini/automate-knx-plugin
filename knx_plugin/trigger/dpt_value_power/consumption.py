@@ -1,4 +1,3 @@
-from typing import List
 
 import home
 from knx_plugin.trigger import mean, GreaterThan, LesserThan
@@ -90,7 +89,7 @@ class Low(mean.InBetween):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         range: int = None,
         value: float = None,
@@ -154,7 +153,7 @@ class High(mean.InBetween):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         range: int = None,
         value: float = None,

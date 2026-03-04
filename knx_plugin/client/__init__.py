@@ -2,7 +2,8 @@ import asyncio
 import logging
 
 import knx_stack
-from typing import Iterable, Callable, Union, Tuple, Any
+from collections.abc import Callable, Iterable
+from typing import Any, Union
 
 
 class MsgNotEncoded(Exception):
@@ -12,7 +13,7 @@ class MsgNotEncoded(Exception):
 class Client(asyncio.Protocol):
 
     def __init__(self, on_con_lost, knx_state: "knx_stack.State", tasks: Iterable["Callable"]):
-        self._loop = asyncio.get_event_loop()
+        self._loop = asyncio.get_running_loop()
         self._transport = None
         self._tasks = set(tasks)
         self._state = knx_state
@@ -63,7 +64,7 @@ class Client(asyncio.Protocol):
                 "knx_stack.layer.application.a_group_value_write.ind.Msg",
             ]
         ],
-    ) -> Tuple[
+    ) -> tuple[
         Iterable[
             Union[
                 "knx_stack.layer.application.a_group_value_read.req.Msg",
