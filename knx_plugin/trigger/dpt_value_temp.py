@@ -1,4 +1,3 @@
-from typing import List
 
 import home
 
@@ -80,7 +79,7 @@ class Warm(InBetween):
     def __init__(
         self,
         description: Description,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         value: float = None,
         range: int = None,
     ):

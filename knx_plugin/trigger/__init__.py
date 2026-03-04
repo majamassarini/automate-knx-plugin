@@ -2,7 +2,6 @@ import home
 import copy
 import knx_stack
 
-from typing import List
 from knx_plugin.message import Description
 
 
@@ -11,7 +10,7 @@ class Trigger(home.protocol.Trigger, Description):
 
     @classmethod
     def make(
-        cls, addresses: List[knx_stack.Address], events: "home.Event" = None
+        cls, addresses: list[knx_stack.Address], events: "home.Event" = None
     ) -> "knx_plugin.Trigger":
         description = copy.deepcopy(cls.DPT)
         dsc = cls(description, events)
@@ -20,7 +19,7 @@ class Trigger(home.protocol.Trigger, Description):
 
     @classmethod
     def make_from_yaml(
-        cls, addresses: List[int], events: "home.Event" = None
+        cls, addresses: list[int], events: "home.Event" = None
     ) -> "knx_plugin.Trigger":
         description = copy.deepcopy(cls.DPT)
         description["addresses"] = addresses
@@ -122,7 +121,7 @@ class ComparisonMixin:
     @classmethod
     def make_from_yaml(
         cls,
-        addresses: List[int],
+        addresses: list[int],
         events: "home.Event" = None,
         value: int = None,
     ) -> "knx_plugin.Trigger":
