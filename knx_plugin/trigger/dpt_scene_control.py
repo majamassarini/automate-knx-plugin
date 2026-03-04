@@ -1,6 +1,5 @@
 import copy
 
-from typing import List
 
 import home
 import knx_stack
@@ -20,7 +19,7 @@ class Activate(Parent):
     DEFAULT_EVENTS = []
 
     def __init__(
-        self, description: dict, events: List[home.Event] = None, number: int = None
+        self, description: dict, events: list[home.Event] = None, number: int = None
     ):
         description["fields"]["number"] = number if number else 0
         super(Activate, self).__init__(description, events)
@@ -28,8 +27,8 @@ class Activate(Parent):
     @classmethod
     def make(
         cls,
-        addresses: List[knx_stack.Address],
-        events: List[home.Event] = None,
+        addresses: list[knx_stack.Address],
+        events: list[home.Event] = None,
         number: int = None,
     ):
         description = copy.deepcopy(cls.DPT)
@@ -39,7 +38,7 @@ class Activate(Parent):
 
     @classmethod
     def make_from_yaml(
-        cls, addresses: List[int], events: List[home.Event] = None, number: int = None
+        cls, addresses: list[int], events: list[home.Event] = None, number: int = None
     ):
         description = copy.deepcopy(cls.DPT)
         description["addresses"] = addresses

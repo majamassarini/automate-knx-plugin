@@ -109,6 +109,7 @@ if __name__ == "__main__":
     handler = logging.StreamHandler(sys.stdout)
     root.addHandler(handler)
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     loop.create_task(ClientExample().run())
     loop.run_forever()

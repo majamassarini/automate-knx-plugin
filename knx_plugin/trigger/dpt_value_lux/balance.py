@@ -1,6 +1,5 @@
 import copy
 
-from typing import List
 
 import home
 import knx_stack
@@ -85,7 +84,7 @@ class SunBrightness(mean.Mean):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
         lowest_light_brightness: int = None,
@@ -114,8 +113,8 @@ class SunBrightness(mean.Mean):
     @classmethod
     def make(
         cls,
-        addresses: List[knx_stack.Address],
-        events: List[home.Event] = None,
+        addresses: list[knx_stack.Address],
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
         lowest_light_brightness: int = None,
@@ -140,8 +139,8 @@ class SunBrightness(mean.Mean):
     @classmethod
     def make_from_yaml(
         cls,
-        addresses: List[int],
-        events: List[home.Event] = None,
+        addresses: list[int],
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
         lowest_light_brightness: int = None,
@@ -182,7 +181,7 @@ class SunBrightness(mean.Mean):
         return False
 
     @property
-    def events(self) -> List[home.Event]:
+    def events(self) -> list[home.Event]:
         a_list = self._events.copy()
         a_list.append(self._event)
         return a_list

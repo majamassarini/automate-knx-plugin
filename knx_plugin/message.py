@@ -1,7 +1,7 @@
 import copy
 import logging
 
-from typing import List, Union, Type
+from typing import Type, Union
 
 import home
 import knx_stack
@@ -21,7 +21,7 @@ class Description(home.protocol.Description):
             data["name"], fields
         )
         self._dpt_class = self._dpt.__class__
-        self._addresses: List[knx_stack.Address] = (
+        self._addresses: list[knx_stack.Address] = (
             [
                 knx_stack.GroupAddress(free_style=address)
                 for address in data["addresses"]
@@ -39,20 +39,20 @@ class Description(home.protocol.Description):
         return self._dpt
 
     @property
-    def asaps(self) -> List[knx_stack.ASAP]:
+    def asaps(self) -> list[knx_stack.ASAP]:
         return self._asaps
 
     @property
-    def addresses(self) -> List[knx_stack.Address]:
+    def addresses(self) -> list[knx_stack.Address]:
         return self._addresses
 
     @addresses.setter
-    def addresses(self, value: List[knx_stack.Address]):
+    def addresses(self, value: list[knx_stack.Address]):
         self._addresses = value
 
     @classmethod
     def make(
-        cls, addresses: List[knx_stack.Address]
+        cls, addresses: list[knx_stack.Address]
     ) -> "knx_plugin.message.Description":
         description = copy.deepcopy(cls.DPT)
         dsc = cls(description)
@@ -60,7 +60,7 @@ class Description(home.protocol.Description):
         return dsc
 
     @classmethod
-    def make_from_yaml(cls, addresses: List[int]) -> "knx_plugin.message.Description":
+    def make_from_yaml(cls, addresses: list[int]) -> "knx_plugin.message.Description":
         description = copy.deepcopy(cls.DPT)
         description["addresses"] = addresses
         return cls(description)
@@ -157,7 +157,7 @@ class Command(Description, home.protocol.Command):
 
     def execute(
         self,
-    ) -> List["knx_stack.layer.application.a_group_value_write.req.Msg"]:
+    ) -> list["knx_stack.layer.application.a_group_value_write.req.Msg"]:
         req_msgs = []
         for asap in self._asaps:
             req_msgs.append(

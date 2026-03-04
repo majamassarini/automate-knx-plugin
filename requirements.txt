@@ -1,2 +1,0 @@
-git+git://github.com/majamassarini/knx-stack.git
-git+git://github.com/majamassarini/automate-home.git

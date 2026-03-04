@@ -1,4 +1,3 @@
-from typing import List
 
 import home
 
@@ -49,7 +48,7 @@ class Bright(mean.GreaterThan):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
     ):
@@ -106,7 +105,7 @@ class DeepDark(mean.LesserThan):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
     ):
@@ -164,7 +163,7 @@ class Dark(mean.InBetween):
     def __init__(
         self,
         description: dict,
-        events: List[home.Event] = None,
+        events: list[home.Event] = None,
         samples: int = None,
         value: float = None,
         range: int = None,
