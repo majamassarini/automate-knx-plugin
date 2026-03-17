@@ -18,10 +18,13 @@ class Equal(Parent):
     DEFAULT_EVENTS = [home.event.scene.Event.Triggered]
 
     def __init__(
-        self, description: dict, events: list[home.Event] = None, index: int = None
+        self,
+        description: dict,
+        events: list[home.Event] = None,
+        index: int = None,
     ):
         description["fields"]["index"] = index if index else 0
-        super(Equal, self).__init__(description, events)
+        super(Equal, self).__init__(description, events)  # type: ignore[call-arg]
 
     @classmethod
     def make(
@@ -37,10 +40,13 @@ class Equal(Parent):
 
     @classmethod
     def make_from_yaml(
-        cls, addresses: list[int], events: list[home.Event] = None, index: int = None
+        cls,
+        addresses: list[int],
+        events: list[home.Event] = None,
+        index: int = None,
     ):
         description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
+        description["addresses"] = addresses  # type: ignore[assignment]
         return cls(description, events, index)
 
 

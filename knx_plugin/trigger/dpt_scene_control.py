@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 
 import home
@@ -16,13 +17,16 @@ class Activate(Parent):
         "fields": {"number": 0, "command": "activate"},
     }
 
-    DEFAULT_EVENTS = []
+    DEFAULT_EVENTS: list[Any] = []
 
     def __init__(
-        self, description: dict, events: list[home.Event] = None, number: int = None
+        self,
+        description: dict,
+        events: list[home.Event] = None,
+        number: int = None,
     ):
         description["fields"]["number"] = number if number else 0
-        super(Activate, self).__init__(description, events)
+        super(Activate, self).__init__(description, events)  # type: ignore[call-arg]
 
     @classmethod
     def make(
@@ -38,8 +42,11 @@ class Activate(Parent):
 
     @classmethod
     def make_from_yaml(
-        cls, addresses: list[int], events: list[home.Event] = None, number: int = None
+        cls,
+        addresses: list[int],
+        events: list[home.Event] = None,
+        number: int = None,
     ):
         description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
+        description["addresses"] = addresses  # type: ignore[assignment]
         return cls(description, events, number)

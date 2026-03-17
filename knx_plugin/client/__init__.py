@@ -12,7 +12,12 @@ class MsgNotEncoded(Exception):
 
 class Client(asyncio.Protocol):
 
-    def __init__(self, on_con_lost, knx_state: "knx_stack.State", tasks: Iterable["Callable"]):
+    def __init__(
+        self,
+        on_con_lost,
+        knx_state: "knx_stack.State",
+        tasks: Iterable["Callable"],
+    ):
         self._transport = None
         self._tasks = set(tasks)
         self._state = knx_state
@@ -40,11 +45,17 @@ class Client(asyncio.Protocol):
             "knx_stack.layer.application.a_group_value_write.ind.Msg",
         ],
     ) -> "knx_stack.Msg":
-        if isinstance(msg, knx_stack.layer.application.a_group_value_write.req.Msg):
+        if isinstance(
+            msg, knx_stack.layer.application.a_group_value_write.req.Msg
+        ):
             knx_msg = knx_stack.encode_msg(self._state, msg)
-        elif isinstance(msg, knx_stack.layer.application.a_group_value_read.req.Msg):
+        elif isinstance(
+            msg, knx_stack.layer.application.a_group_value_read.req.Msg
+        ):
             knx_msg = knx_stack.encode_msg(self._state, msg)
-        elif isinstance(msg, knx_stack.layer.application.a_group_value_write.ind.Msg):
+        elif isinstance(
+            msg, knx_stack.layer.application.a_group_value_write.ind.Msg
+        ):
             knx_msg = knx_stack.encode_msg(self._state, msg)
         else:
             raise MsgNotEncoded("msg: {} could not be encoded".format(msg))
@@ -93,19 +104,22 @@ class Client(asyncio.Protocol):
                 if isinstance(
                     msg, knx_stack.layer.application.a_group_value_read.req.Msg
                 ) or isinstance(
-                    msg, knx_stack.layer.application.a_group_value_write.req.Msg
+                    msg,
+                    knx_stack.layer.application.a_group_value_write.req.Msg,
                 ):
                     req.append(msg)
                 elif isinstance(
                     msg, knx_stack.layer.application.a_group_value_read.con.Msg
                 ) or isinstance(
-                    msg, knx_stack.layer.application.a_group_value_write.con.Msg
+                    msg,
+                    knx_stack.layer.application.a_group_value_write.con.Msg,
                 ):
                     con.append(msg)
                 elif isinstance(
                     msg, knx_stack.layer.application.a_group_value_read.ind.Msg
                 ) or isinstance(
-                    msg, knx_stack.layer.application.a_group_value_write.ind.Msg
+                    msg,
+                    knx_stack.layer.application.a_group_value_write.ind.Msg,
                 ):
                     ind.append(msg)
                 else:

@@ -1,4 +1,3 @@
-
 import home
 from knx_plugin.trigger import mean, GreaterThan, LesserThan
 

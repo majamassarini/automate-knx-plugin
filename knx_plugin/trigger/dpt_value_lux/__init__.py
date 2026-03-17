@@ -1,6 +1,8 @@
+from __future__ import annotations
 
 import home
 
+from knx_plugin.message import Description
 from knx_plugin.trigger import Always as Parent
 from knx_plugin.trigger import mean
 
@@ -23,7 +25,7 @@ class Brightness(Always):
 
     def make_new_state_from(
         self,
-        another_description: "knx_plugin.message.Description",
+        another_description: Description,
         old_state: home.appliance.State,
     ) -> home.appliance.State:
         new_state = super(Always, self).make_new_state_from(
@@ -53,7 +55,10 @@ class Bright(mean.GreaterThan):
         value: float = None,
     ):
         super(Bright, self).__init__(
-            description, events, samples if samples else self.NUM_OF_SAMPLES, value
+            description,
+            events,
+            samples if samples else self.NUM_OF_SAMPLES,
+            value,
         )
 
 
@@ -110,7 +115,10 @@ class DeepDark(mean.LesserThan):
         value: float = None,
     ):
         super(DeepDark, self).__init__(
-            description, events, samples if samples else self.NUM_OF_SAMPLES, value
+            description,
+            events,
+            samples if samples else self.NUM_OF_SAMPLES,
+            value,
         )
 
 

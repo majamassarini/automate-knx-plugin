@@ -31,10 +31,12 @@ class Stub(home.MyHome):
 
     def _build_performers(self):
         appliance = self.appliances.find("una luce")
-        knx_command = knx_plugin.command.dpt_brightness.Brightness.make_from_yaml(
-            [
-                0xBBBB,
-            ]
+        knx_command = (
+            knx_plugin.command.dpt_brightness.Brightness.make_from_yaml(
+                [
+                    0xBBBB,
+                ]
+            )
         )
         knx_trigger_on = knx_plugin.trigger.dpt_switch.On.make_from_yaml(
             [0xCCCC, 0xDDDD], [home.appliance.light.event.forced.Event.On]
@@ -92,7 +94,9 @@ class TestLogics(TestCase):
                 is_notified = False
                 while not is_notified and i < self.MAX_LOOP:
                     await asyncio.sleep(0.3)
-                    is_notified = tc.myhome.appliances.find("una luce").is_notified(
+                    is_notified = tc.myhome.appliances.find(
+                        "una luce"
+                    ).is_notified(
                         home.appliance.light.event.brightness.Event(44)
                     )
                     i += 1
@@ -113,7 +117,9 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt_switch
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                     await asyncio.sleep(0.1)
 
                 tsap = tc.knx_gateway._association_table.get_tsap(
@@ -125,7 +131,9 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt_brightness
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                     await asyncio.sleep(0.1)
 
         test = Test("test_state")

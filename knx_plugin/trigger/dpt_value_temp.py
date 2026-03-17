@@ -1,8 +1,12 @@
-
 import home
 
 from knx_plugin.message import Description
-from knx_plugin.trigger import Always as Parent, GreaterThan, InBetween, LesserThan
+from knx_plugin.trigger import (
+    Always as Parent,
+    GreaterThan,
+    InBetween,
+    LesserThan,
+)
 from knx_plugin.trigger.custom_clima import Report
 
 
@@ -84,7 +88,7 @@ class Warm(InBetween):
         range: int = None,
     ):
         super(Warm, self).__init__(
-            description, events, value, range if range else self.RANGE
+            description, events, value, range if range else self.RANGE  # type: ignore[arg-type]
         )
 
 
@@ -140,5 +144,7 @@ class CustomThermostatReport(Report):
         new_state = super(CustomThermostatReport, self).make_new_state_from(
             another_description, old_state
         )
-        new_state = new_state.next(self._decode_temperatura(another_description))
+        new_state = new_state.next(
+            self._decode_temperatura(another_description)
+        )
         return new_state

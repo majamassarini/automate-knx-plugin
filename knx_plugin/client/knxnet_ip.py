@@ -74,7 +74,9 @@ class Client(Parent):
         )
         asyncio.get_running_loop().create_task(self.manage_connect_timeout())
         msg = knx_stack.encode_msg(self._state, connect_req)
-        self._transport.sendto(self.encode(msg), (self._remote_addr, self._remote_port))
+        self._transport.sendto(
+            self.encode(msg), (self._remote_addr, self._remote_port)
+        )
         self._connect_timeout = datetime.datetime.now()
 
     def decode(self, data):
@@ -94,7 +96,7 @@ class Client(Parent):
                 "  ASCII (errors='replace'): {}".format(
                     len(data),
                     data.hex(),
-                    data.decode('ascii', errors='replace')
+                    data.decode("ascii", errors="replace"),
                 )
             )
             # Check if it looks like a malformed HPAI
@@ -103,7 +105,9 @@ class Client(Parent):
                     "HPAI parsing error detected - possible protocol mismatch or corruption"
                 )
         except Exception as e:
-            self.logger.error("Unexpected error decoding message: {}".format(e))
+            self.logger.error(
+                "Unexpected error decoding message: {}".format(e)
+            )
             self.logger.error(
                 "Unexpected decode failure details:\n"
                 "  Error type: {}\n"
@@ -113,7 +117,7 @@ class Client(Parent):
                     type(e).__name__,
                     len(data),
                     data.hex(),
-                    data.decode('ascii', errors='replace')
+                    data.decode("ascii", errors="replace"),
                 )
             )
         return msgs
@@ -125,7 +129,7 @@ class Client(Parent):
 
     def datagram_received(self, data, addr):
         msgs = self.decode(data)
-        (reqs, cons, inds, others) = self.filter(msgs)
+        reqs, cons, inds, others = self.filter(msgs)
         for task in self._tasks:
             for con in cons:
                 asyncio.get_running_loop().create_task(task(con))
@@ -141,14 +145,20 @@ class Client(Parent):
     async def write(self, msgs, *args):
         await self._wait_for_transport()
         for msg in msgs:
-            if isinstance(msg, knx_stack.layer.application.a_group_value_write.req.Msg):
-                while self._retries < self.MAX_RETRIES and not self._got_a_confirmation:
+            if isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.req.Msg
+            ):
+                while (
+                    self._retries < self.MAX_RETRIES
+                    and not self._got_a_confirmation
+                ):
                     self.logger.info("retry {}".format(self._retries))
                     self._retries += 1
                     self._got_a_confirmation = False
                     req = knx_stack.encode_msg(self._state, msg)
                     self._transport.sendto(
-                        self.encode(req), (self._remote_addr, self._remote_port)
+                        self.encode(req),
+                        (self._remote_addr, self._remote_port),
                     )
                     self._tunneling_request_timeout = datetime.datetime.now()
                     await self.manage_tunneling_request_timeout()
@@ -162,7 +172,9 @@ class Client(Parent):
                 self.logger.info("ConnectRes received")
                 if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
                     self._connect_alive_timeout = datetime.datetime.now()
-                    asyncio.get_running_loop().create_task(self.manage_connect_alive_timeout())
+                    asyncio.get_running_loop().create_task(
+                        self.manage_connect_alive_timeout()
+                    )
 
                     # Connection successful - reset reconnection backoff
                     if self._reconnect_attempt > 0:
@@ -185,7 +197,9 @@ class Client(Parent):
 
     def manage_request_confirmation(self, msg):
         if self._tunneling_request_timeout:
-            if isinstance(msg, knx_stack.layer.application.a_group_value_write.con.Msg):
+            if isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.con.Msg
+            ):
                 self.logger.info("Got a confirmation {}".format(msg))
                 self._got_a_confirmation = True
 
@@ -203,13 +217,21 @@ class Client(Parent):
             if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
                 self._connect_alive_timeout = datetime.datetime.now()
             else:
-                error_code = knx_stack.definition.knxnet_ip.ErrorCodes(msg.status)
+                error_code = knx_stack.definition.knxnet_ip.ErrorCodes(
+                    msg.status
+                )
                 self.logger.error(
-                    "Received server tunneling request with error {}".format(error_code)
+                    "Received server tunneling request with error {}".format(
+                        error_code
+                    )
                 )
                 # Error 3 typically means E_CONNECTION_ID - server doesn't recognize our connection
                 # We need a full reconnection with exponential backoff
-                if msg.status == 3 or msg.status == knx_stack.knxnet_ip.ErrorCodes.E_SEQUENCE_NUMBER:
+                if (
+                    msg.status == 3
+                    or msg.status
+                    == knx_stack.knxnet_ip.ErrorCodes.E_SEQUENCE_NUMBER
+                ):
                     self.logger.warning(
                         "Connection error (code: {}) - scheduling reconnection with backoff".format(
                             msg.status
@@ -217,15 +239,21 @@ class Client(Parent):
                     )
                     # Schedule reconnection with exponential backoff
                     if self._transport:
-                        asyncio.get_running_loop().create_task(self._reconnect_with_backoff())
+                        asyncio.get_running_loop().create_task(
+                            self._reconnect_with_backoff()
+                        )
         elif isinstance(msg, knx_stack.knxnet_ip.core.connectionstate.res.Msg):
             # Received response to our keepalive request
-            self.logger.info("Received connectionstate response: {}".format(msg))
+            self.logger.info(
+                "Received connectionstate response: {}".format(msg)
+            )
             if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
                 self._got_alive_response = True
                 self._missed_keepalives = 0
                 self._connect_alive_response_timeout = None
-                self.logger.debug("Keepalive acknowledged, connection is healthy")
+                self.logger.debug(
+                    "Keepalive acknowledged, connection is healthy"
+                )
             else:
                 self.logger.error(
                     "Received connectionstate response with error {}".format(
@@ -235,11 +263,13 @@ class Client(Parent):
 
     def manage_disconnect_request(self, msg):
         if isinstance(msg, knx_stack.knxnet_ip.core.disconnect.req.Msg):
-            self.logger.warning("Received disconnect request from gateway: {}".format(msg))
+            self.logger.warning(
+                "Received disconnect request from gateway: {}".format(msg)
+            )
             # Send disconnect response
             disconnect_res = knx_stack.knxnet_ip.core.disconnect.res.Msg(
                 communication_channel_id=self._state.communication_channel_id,
-                status=knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR
+                status=knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR,
             )
             res_msg = knx_stack.encode_msg(self._state, disconnect_res)
             self._transport.sendto(
@@ -262,7 +292,9 @@ class Client(Parent):
                         self.logger.info("Connect timeout expired")
                         self._connect_timeout = None
                         break
-                await asyncio.sleep(knx_stack.knxnet_ip.CONNECT_REQUEST_TIMEOUT / 3)
+                await asyncio.sleep(
+                    knx_stack.knxnet_ip.CONNECT_REQUEST_TIMEOUT / 3
+                )
             except Exception as e:
                 self.logger.error(e)
 
@@ -271,7 +303,8 @@ class Client(Parent):
             try:
                 if self._tunneling_request_timeout:
                     if (
-                        datetime.datetime.now() - self._tunneling_request_timeout
+                        datetime.datetime.now()
+                        - self._tunneling_request_timeout
                     ) > datetime.timedelta(
                         seconds=knx_stack.knxnet_ip.TUNNELING_REQUEST_TIMEOUT
                     ):
@@ -282,7 +315,9 @@ class Client(Parent):
                         self._tunneling_request_timeout = None
                         break
                     else:
-                        self.logger.info("Tunneling request timeout not expired yet")
+                        self.logger.info(
+                            "Tunneling request timeout not expired yet"
+                        )
                         await asyncio.sleep(
                             knx_stack.knxnet_ip.TUNNELING_REQUEST_TIMEOUT / 6
                         )
@@ -302,23 +337,30 @@ class Client(Parent):
                 # Check if we're waiting for a keepalive response
                 if self._connect_alive_response_timeout:
                     if (
-                        datetime.datetime.now() - self._connect_alive_response_timeout
+                        datetime.datetime.now()
+                        - self._connect_alive_response_timeout
                     ) > datetime.timedelta(seconds=10):
                         # No response received within 10 seconds
                         if not self._got_alive_response:
                             self._missed_keepalives += 1
                             self.logger.warning(
                                 "Missed keepalive response (count: {}/{})".format(
-                                    self._missed_keepalives, self.MAX_MISSED_KEEPALIVES
+                                    self._missed_keepalives,
+                                    self.MAX_MISSED_KEEPALIVES,
                                 )
                             )
-                            if self._missed_keepalives >= self.MAX_MISSED_KEEPALIVES:
+                            if (
+                                self._missed_keepalives
+                                >= self.MAX_MISSED_KEEPALIVES
+                            ):
                                 self.logger.error(
                                     "Too many missed keepalives, scheduling reconnection with backoff"
                                 )
                                 # Schedule reconnection with exponential backoff
                                 if self._transport:
-                                    asyncio.get_running_loop().create_task(self._reconnect_with_backoff())
+                                    asyncio.get_running_loop().create_task(
+                                        self._reconnect_with_backoff()
+                                    )
                                 break
                         self._connect_alive_response_timeout = None
                         self._got_alive_response = False
@@ -330,22 +372,31 @@ class Client(Parent):
                     ) > datetime.timedelta(
                         seconds=(knx_stack.knxnet_ip.CONNECTION_ALIVE_TIME / 2)
                     ):
-                        self.logger.info("Sending keepalive (connectionstate request)")
-                        req_msg = knx_stack.knxnet_ip.core.connectionstate.req.Msg(
-                            addr_control_endpoint=self._local_addr,
-                            port_control_endpoint=self._local_port,
+                        self.logger.info(
+                            "Sending keepalive (connectionstate request)"
+                        )
+                        req_msg = (
+                            knx_stack.knxnet_ip.core.connectionstate.req.Msg(
+                                addr_control_endpoint=self._local_addr,
+                                port_control_endpoint=self._local_port,
+                            )
                         )
                         knx_msg = knx_stack.encode_msg(self._state, req_msg)
                         self._connect_alive_timeout = datetime.datetime.now()
-                        self._connect_alive_response_timeout = datetime.datetime.now()
+                        self._connect_alive_response_timeout = (
+                            datetime.datetime.now()
+                        )
                         self._got_alive_response = False
                         if self._transport:
                             self._transport.sendto(
-                                self.encode(knx_msg), (self._remote_addr, self._remote_port)
+                                self.encode(knx_msg),
+                                (self._remote_addr, self._remote_port),
                             )
                 await asyncio.sleep(10)  # Check every 10 seconds
             except Exception as e:
-                self.logger.error("Error in manage_connect_alive_timeout: {}".format(e))
+                self.logger.error(
+                    "Error in manage_connect_alive_timeout: {}".format(e)
+                )
                 break
 
     async def _reconnect_with_backoff(self):
@@ -361,8 +412,8 @@ class Client(Parent):
 
         # Calculate delay with exponential backoff
         delay = min(
-            self._base_reconnect_delay * (2 ** self._reconnect_attempt),
-            self._max_reconnect_delay
+            self._base_reconnect_delay * (2**self._reconnect_attempt),
+            self._max_reconnect_delay,
         )
 
         self._reconnect_attempt += 1
@@ -380,9 +431,7 @@ class Client(Parent):
 
         self.logger.warning(
             "Reconnection attempt {}/{} - waiting {}s before reconnecting".format(
-                self._reconnect_attempt,
-                self._max_reconnect_attempts,
-                delay
+                self._reconnect_attempt, self._max_reconnect_attempts, delay
             )
         )
 
@@ -391,14 +440,22 @@ class Client(Parent):
 
         # Send disconnect request to cleanly terminate old connection on server
         # This prevents sequence number mismatches when reconnecting
-        if self._transport and self._state and self._state.communication_channel_id is not None:
+        if (
+            self._transport
+            and self._state
+            and self._state.communication_channel_id is not None
+        ):
             try:
-                self.logger.info("Sending disconnect request before reconnection")
+                self.logger.info(
+                    "Sending disconnect request before reconnection"
+                )
                 await self.disconnect()
                 # Give server time to process disconnect
                 await asyncio.sleep(0.1)
             except Exception as e:
-                self.logger.warning("Failed to send disconnect request: {}".format(e))
+                self.logger.warning(
+                    "Failed to send disconnect request: {}".format(e)
+                )
 
         # Close current transport (if still open) to trigger reconnection
         if self._transport:
@@ -413,4 +470,6 @@ class Client(Parent):
             port_control_endpoint=self._local_port,
         )
         msg = knx_stack.encode_msg(self._state, disconnect_req)
-        self._transport.sendto(self.encode(msg), (self._remote_addr, self._remote_port))
+        self._transport.sendto(
+            self.encode(msg), (self._remote_addr, self._remote_port)
+        )
