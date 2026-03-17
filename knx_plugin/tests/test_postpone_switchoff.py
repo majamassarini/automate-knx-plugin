@@ -156,5 +156,5 @@ class TestLogics(TestCase):
         myhome = Stub()
         self.make_process(myhome)
         self.add_knx_gateway(myhome, 2)
-        asyncio.get_event_loop().create_task(self.emulate_bus_events())
+        asyncio.get_running_loop().create_task(self.emulate_bus_events())
         self.execute(myhome)

@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import AsyncMock
 
 import knx_plugin
@@ -16,7 +17,9 @@ class TestCase(Parent):
         self._old_knx_client_write = client.write
         client.write = AsyncMock(side_effect=self.write_side_effect)
         self._knx_gateway = knx_plugin.gateway.usbhid.Gateway(client)
-        self._knx_gateway._loop.create_connection = AsyncMock(return_value=(None, None))
+        asyncio.get_running_loop().create_connection = AsyncMock(
+            return_value=(None, None)
+        )
         self._knx_gateway.associate_commands(myhome.commands_by("knx"))
         self._knx_gateway.associate_triggers(myhome.triggers_by("knx"))
         self.process.add(self._knx_gateway)

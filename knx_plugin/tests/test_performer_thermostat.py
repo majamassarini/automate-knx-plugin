@@ -140,7 +140,7 @@ class TestLogics(TestCase):
         self.make_process(myhome)
         self.add_knx_gateway(myhome, 6)
 
-        asyncio.get_event_loop().create_task(self.emulate_bus_events())
+        asyncio.get_running_loop().create_task(self.emulate_bus_events())
         self.execute(myhome)
         termostato = myhome.appliances.find("un termostato")
         self.assertTrue(termostato.was_forced_on)
