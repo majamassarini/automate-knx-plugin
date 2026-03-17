@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 
 import home
@@ -45,8 +46,8 @@ class Equal(Parent):
         events: list[home.Event] = None,
         index: int = None,
     ):
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses  # type: ignore[assignment]
+        description: dict[str, Any] = copy.deepcopy(cls.DPT)
+        description["addresses"] = addresses
         return cls(description, events, index)
 
 
