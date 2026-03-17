@@ -112,7 +112,7 @@ class TestLogics(TestCase):
         knx_curtain_engine.associate_commands([command])
         knx_curtain_engine.run([])
         msgs = command.execute()
-        asyncio.get_event_loop().create_task(knx_curtain_engine.writer(msgs))
+        asyncio.get_running_loop().create_task(knx_curtain_engine.writer(msgs))
 
         myhome = Stub()
 

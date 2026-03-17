@@ -10,7 +10,7 @@ from knx_plugin.tests.testcase import TestCase
 class Stub(home.MyHome):
     class Switchhh(home.appliance.light.Appliance):
         def update_by(self, trigger, description):
-            asyncio.get_event_loop().stop()
+            asyncio.get_running_loop().stop()
             return super(Stub.Switchhh, self).update_by(trigger, description)
 
     def _build_appliances(self):
@@ -97,7 +97,7 @@ class TestLogics(TestCase):
                 home.appliance.light.event.forced.Event.On
             )
         )
-        asyncio.get_event_loop().create_task(self.emulate_bus_events())
+        asyncio.get_running_loop().create_task(self.emulate_bus_events())
         self.execute(myhome)
         self.assertTrue(
             myhome.appliances.find("una luce").is_notified(
