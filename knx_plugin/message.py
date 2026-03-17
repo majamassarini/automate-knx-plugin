@@ -63,8 +63,8 @@ class Description(home.protocol.Description):
 
     @classmethod
     def make_from_yaml(cls, addresses: list[int]) -> Description:
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses  # type: ignore[assignment]
+        description: dict[str, Any] = copy.deepcopy(cls.DPT)
+        description["addresses"] = addresses
         return cls(description)
 
     @classmethod

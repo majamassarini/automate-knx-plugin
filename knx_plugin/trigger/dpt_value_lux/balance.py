@@ -1,4 +1,5 @@
 import copy
+from typing import Any
 
 
 import home
@@ -157,8 +158,8 @@ class SunBrightness(mean.Mean):
         min_sun_brightness: int = None,
         max_sun_brightness: int = None,
     ):
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses  # type: ignore[assignment]
+        description: dict[str, Any] = copy.deepcopy(cls.DPT)
+        description["addresses"] = addresses
         return cls(
             description,
             events,

@@ -3,6 +3,7 @@ from __future__ import annotations
 import home
 import copy
 import knx_stack
+from typing import Any
 
 from knx_plugin.message import Description
 
@@ -23,8 +24,8 @@ class Trigger(home.protocol.Trigger, Description):
     def make_from_yaml(
         cls, addresses: list[int], events: home.Event = None
     ) -> Trigger:
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses  # type: ignore[assignment]
+        description: dict[str, Any] = copy.deepcopy(cls.DPT)
+        description["addresses"] = addresses
         return cls(description, events)  # type: ignore[call-arg]
 
     def is_triggered(self, another_description: Description) -> bool:
@@ -123,8 +124,8 @@ class ComparisonMixin:
         events: home.Event = None,
         value: int = None,
     ) -> Trigger:
-        description = copy.deepcopy(cls.DPT)  # type: ignore[attr-defined]
-        description["addresses"] = addresses  # type: ignore[assignment]
+        description: dict[str, Any] = copy.deepcopy(cls.DPT)  # type: ignore[attr-defined]
+        description["addresses"] = addresses
         return cls(description, events, value)  # type: ignore[call-arg, return-value]
 
 
