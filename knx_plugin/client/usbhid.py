@@ -13,7 +13,7 @@ class MsgNotEncoded(Exception):
 class Client(Parent):
     def data_received(self, data):
         msgs = self.decode(data)
-        (reqs, cons, inds, others) = self.filter(msgs)
+        reqs, cons, inds, others = self.filter(msgs)
         for task in self._tasks:
             for msg in cons:
                 asyncio.get_running_loop().create_task(
@@ -61,7 +61,9 @@ class Client(Parent):
     async def write(self, msgs, *args):
         await self._wait_for_transport()
         for msg in msgs:
-            if isinstance(msg, knx_stack.layer.application.a_group_value_write.req.Msg):
+            if isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.req.Msg
+            ):
                 knx_msg = str(self.encode(msg))
                 self.logger.info("written {}".format(knx_msg))
                 self._transport.write(knx_msg.encode())
@@ -76,9 +78,13 @@ class ClientExample(object):
         state = args[0]
         new_state = state
         final_msg = None
-        if isinstance(msg, knx_stack.layer.application.a_group_value_write.req.Msg):
+        if isinstance(
+            msg, knx_stack.layer.application.a_group_value_write.req.Msg
+        ):
             final_msg = knx_stack.encode_msg(state, msg)
-        elif isinstance(msg, knx_stack.layer.application.a_group_value_read.req.Msg):
+        elif isinstance(
+            msg, knx_stack.layer.application.a_group_value_read.req.Msg
+        ):
             final_msg = knx_stack.encode_msg(state, msg)
         if final_msg:
             self._transport.write(str(final_msg).encode())

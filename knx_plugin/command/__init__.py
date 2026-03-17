@@ -18,4 +18,9 @@ OpenCloseAppliance = TypeVar(
 )
 
 
-from knx_plugin.command import custom_clima, dpt_brightness, dpt_switch, dpt_updown
+from knx_plugin.command import (
+    custom_clima,
+    dpt_brightness,
+    dpt_switch,
+    dpt_updown,
+)

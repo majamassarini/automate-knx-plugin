@@ -11,7 +11,9 @@ class Stub(home.MyHome):
     class Thermometerrr(home.appliance.sensor.thermometer.Appliance):
         def update_by(self, trigger, description):
             asyncio.get_running_loop().stop()
-            return super(Stub.Thermometerrr, self).update_by(trigger, description)
+            return super(Stub.Thermometerrr, self).update_by(
+                trigger, description
+            )
 
     def _build_appliances(self):
         sensore = Stub.Thermometerrr("un termometro", [])
@@ -90,10 +92,16 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                     await asyncio.sleep(0.1)
 
         test = Test("test_state")
-        tc.assertFalse(tc.myhome.appliances.find("un termometro").is_notified(0.1))
+        tc.assertFalse(
+            tc.myhome.appliances.find("un termometro").is_notified(0.1)
+        )
         test.run()
-        tc.assertTrue(tc.myhome.appliances.find("un termometro").is_notified(0.1))
+        tc.assertTrue(
+            tc.myhome.appliances.find("un termometro").is_notified(0.1)
+        )

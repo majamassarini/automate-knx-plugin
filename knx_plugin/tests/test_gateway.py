@@ -59,7 +59,9 @@ class TestGateway(unittest.TestCase):
                         asap=asap, dpt=trigger.dpt
                     )
                     msg = self._gateway.protocol_instance.encode(msg)
-                    self._gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    self._gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
 
             async def test_stopped(self):
                 i = 0

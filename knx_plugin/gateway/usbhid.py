@@ -8,5 +8,7 @@ class Gateway(Parent):
 
     def _init_state(self):
         self._knx_state = knx_stack.State(
-            knx_stack.Medium.usb_hid, self._association_table, self._datapointtypes
+            knx_stack.Medium.usb_hid,
+            self._association_table,
+            self._datapointtypes,
         )

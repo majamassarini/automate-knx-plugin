@@ -1,5 +1,3 @@
-import copy
-
 import home
 import knx_stack
 
@@ -90,7 +88,11 @@ class Force(Trigger):
 
 class Off(Force):
 
-    DPT = {"name": "DPTSetupClima", "fields": {"funzionamento": "off"}, "addresses": []}
+    DPT = {
+        "name": "DPTSetupClima",
+        "fields": {"funzionamento": "off"},
+        "addresses": [],
+    }
 
     @property
     def forced_event(self):
@@ -203,7 +205,6 @@ class Report(Trigger):
     }
 
     def make_new_state_from(self, another_description, old_state):
-        setpoint = self._decode_setpoint(another_description)
         temperature = self._decode_temperatura(another_description)
         season = self._decode_season(another_description)
         mode = self._decode_mode(another_description)
@@ -211,6 +212,6 @@ class Report(Trigger):
         new_state = old_state.next(season)
         new_state = new_state.next(mode)
         new_state = new_state.next(temperature)
-        # new_state.setpoint = setpoint  # change it just through the web ui or scheduled jobs
+        # setpoint not applied: change it only through web ui or scheduled jobs
 
         return new_state

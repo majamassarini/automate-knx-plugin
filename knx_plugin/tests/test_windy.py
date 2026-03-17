@@ -9,7 +9,9 @@ from knx_plugin.tests.testcase import TestCase
 
 class Stub(home.MyHome):
     def _build_appliances(self):
-        anemometro = home.appliance.sensor.anemometer.Appliance("anemometro", [])
+        anemometro = home.appliance.sensor.anemometer.Appliance(
+            "anemometro", []
+        )
         tapparella = home.appliance.curtain.outdoor.Appliance("tapparella", [])
         collection = home.appliance.Collection()
         collection["tapparelle"] = set(
@@ -27,18 +29,25 @@ class Stub(home.MyHome):
     def _build_performers(self):
         performers = list()
         appliance = self.appliances.find("anemometro")
-        knx_trigger_windy = knx_plugin.trigger.dpt_value_wsp.Strong.make_from_yaml(
-            [
-                0xBBBB,
-            ]
+        knx_trigger_windy = (
+            knx_plugin.trigger.dpt_value_wsp.Strong.make_from_yaml(
+                [
+                    0xBBBB,
+                ]
+            )
         )
-        knx_trigger_quiet = knx_plugin.trigger.dpt_value_wsp.Weak.make_from_yaml(
-            [
-                0xBBBB,
-            ]
+        knx_trigger_quiet = (
+            knx_plugin.trigger.dpt_value_wsp.Weak.make_from_yaml(
+                [
+                    0xBBBB,
+                ]
+            )
         )
         performer = home.Performer(
-            appliance.name, appliance, [], [knx_trigger_windy, knx_trigger_quiet]
+            appliance.name,
+            appliance,
+            [],
+            [knx_trigger_windy, knx_trigger_quiet],
         )
         performers.append(performer)
         appliance = self.appliances.find("tapparella")
@@ -60,7 +69,10 @@ class Stub(home.MyHome):
             [home.appliance.curtain.event.forced.Event.Closed],
         )
         performer = home.Performer(
-            appliance.name, appliance, [command], [trigger_opened, trigger_closed]
+            appliance.name,
+            appliance,
+            [command],
+            [trigger_opened, trigger_closed],
         )
         performer.notify(
             [
@@ -72,7 +84,10 @@ class Stub(home.MyHome):
         return performers
 
     def _build_group_of_performers(self):
-        return {"tapparelle": [self._performers[1]], "sensori": [self._performers[0]]}
+        return {
+            "tapparelle": [self._performers[1]],
+            "sensori": [self._performers[0]],
+        }
 
     def _build_scheduler_triggers(self):
         performers = self.find_group_of_performers("sensori")
@@ -114,9 +129,9 @@ class TestLogics(TestCase):
                 is_notified = False
                 while not is_notified and i < self.MAX_LOOP:
                     await asyncio.sleep(0.3)
-                    is_notified = tc.myhome.appliances.find("tapparella").is_notified(
-                        home.event.wind.Event.Strong
-                    )
+                    is_notified = tc.myhome.appliances.find(
+                        "tapparella"
+                    ).is_notified(home.event.wind.Event.Strong)
                     i += 1
 
             async def emulate_bus_events(self):
@@ -133,7 +148,9 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                     await asyncio.sleep(0.1)
 
         test = Test("test_state")

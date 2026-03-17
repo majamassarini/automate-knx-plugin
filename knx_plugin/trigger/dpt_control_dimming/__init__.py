@@ -32,6 +32,7 @@ class Step(Trigger):
                     )
                 )
                 return triggered
+        return False
 
 
 class BrightnessStep(Step):
@@ -52,7 +53,9 @@ class BrightnessStep(Step):
     10
     """
 
-    DEFAULT_EVENTS = [home.appliance.light.indoor.dimmerable.event.forced.Event.On]
+    DEFAULT_EVENTS = [
+        home.appliance.light.indoor.dimmerable.event.forced.Event.On
+    ]
 
     def make_new_state_from(
         self, another_description: Description, old_state: home.appliance.State

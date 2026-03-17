@@ -85,13 +85,15 @@ class Stub(home.MyHome):
                 home.event.presence.Event.On,
             ],
         )
-        trigger_courtesy_off = knx_plugin.trigger.dpt_switch.Off.make_from_yaml(
-            [
-                0xEEEE,
-            ],
-            [
-                home.event.presence.Event.Off,
-            ],
+        trigger_courtesy_off = (
+            knx_plugin.trigger.dpt_switch.Off.make_from_yaml(
+                [
+                    0xEEEE,
+                ],
+                [
+                    home.event.presence.Event.Off,
+                ],
+            )
         )
         sensore_performer = home.Performer(
             appliance.name,
@@ -108,7 +110,10 @@ class Stub(home.MyHome):
         return performers
 
     def _build_group_of_performers(self):
-        return {"luci": [self._performers[0]], "sensori": [self._performers[1]]}
+        return {
+            "luci": [self._performers[0]],
+            "sensori": [self._performers[1]],
+        }
 
     def _build_scheduler_triggers(self):
         performers = self._group_of_performers["sensori"]
@@ -150,9 +155,9 @@ class TestLogics(TestCase):
                 is_notified = False
                 while not is_notified and i < self.MAX_LOOP:
                     await asyncio.sleep(0.3)
-                    is_notified = tc.myhome.appliances.find("una luce").is_notified(
-                        home.event.courtesy.Event.On
-                    )
+                    is_notified = tc.myhome.appliances.find(
+                        "una luce"
+                    ).is_notified(home.event.courtesy.Event.On)
                     i += 1
 
             async def emulate_bus_events(self):
@@ -168,7 +173,9 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                 await asyncio.sleep(0.1)
 
         test = Test("test_state")
