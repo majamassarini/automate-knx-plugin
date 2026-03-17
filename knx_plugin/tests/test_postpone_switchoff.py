@@ -13,7 +13,9 @@ class Stub(home.MyHome):
         light.notify(home.event.sun.brightness.Event.DeepDark)
         another_light = home.appliance.light.Appliance("another light", [])
         another_light.notify(home.event.sun.brightness.Event.DeepDark)
-        motion_sensor = home.appliance.sensor.motion.Appliance("motion sensor", [])
+        motion_sensor = home.appliance.sensor.motion.Appliance(
+            "motion sensor", []
+        )
         collection = home.appliance.Collection()
         collection["lights"] = set([light, another_light])
         collection["sensors"] = set(
@@ -72,7 +74,9 @@ class Stub(home.MyHome):
         for performer in self.find_group_of_performers("motion spotted"):
             for t in performer.triggers:
                 trigger = home.scheduler.trigger.protocol.Trigger(
-                    name="motion spotted trigger", events=[], protocol_trigger=t
+                    name="motion spotted trigger",
+                    events=[],
+                    protocol_trigger=t,
                 )
                 triggers.append(trigger)
         for performer in self.find_group_of_performers("motion missed"):
@@ -116,37 +120,49 @@ class TestLogics(TestCase):
                 asap=asap, dpt=dpt_on
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_off
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_on
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_off
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_off
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_on
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
 
     @unittest.skip("to be improved")

@@ -4,7 +4,11 @@ from knx_plugin.message import Command
 
 class UpDown(Command):
 
-    DPT = {"name": "DPT_UpDown", "addresses": [], "fields": {"direction": "up"}}
+    DPT = {
+        "name": "DPT_UpDown",
+        "addresses": [],
+        "fields": {"direction": "up"},
+    }
 
     def make_msgs_from(
         self,
@@ -27,7 +31,11 @@ class UpDown(Command):
 
 class Up(Command):
 
-    DPT = {"name": "DPT_UpDown", "addresses": [], "fields": {"direction": "up"}}
+    DPT = {
+        "name": "DPT_UpDown",
+        "addresses": [],
+        "fields": {"direction": "up"},
+    }
 
     def make_msgs_from(
         self, old_state: OpenCloseAppliance, new_state: OpenCloseAppliance
@@ -46,7 +54,11 @@ class Up(Command):
 
 class Stop(Command):
 
-    DPT = {"name": "DPT_Start", "addresses": [], "fields": {"direction": "stop"}}
+    DPT = {
+        "name": "DPT_Start",
+        "addresses": [],
+        "fields": {"direction": "stop"},
+    }
 
     def make_msgs_from(
         self, old_state: OpenCloseAppliance, new_state: OpenCloseAppliance

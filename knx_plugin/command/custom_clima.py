@@ -1,5 +1,3 @@
-import copy
-
 import home
 from knx_plugin.message import Command as Parent
 
@@ -44,10 +42,11 @@ class Setup(Command):
     >>> cmd = knx_plugin.command.custom_clima.Setup.make([3202])
     >>> cmd._asaps = [1]
     >>> state = home.appliance.thermostat.presence.state.off.State()
-    >>> first_state = home.appliance.thermostat.presence.state.off.State([0.0, home.event.clima.season.Event.Winter,
-    ...                                                  home.event.clima.command.Event.Off,
-    ...                                                  home.appliance.thermostat.presence.event.setpoint.Event(19),
-    ...                                                  home.appliance.thermostat.presence.event.keep.setpoint.Event(19)])
+    >>> first_state = home.appliance.thermostat.presence.state.off.State(
+    ...     [0.0, home.event.clima.season.Event.Winter,
+    ...      home.event.clima.command.Event.Off,
+    ...      home.appliance.thermostat.presence.event.setpoint.Event(19),
+    ...      home.appliance.thermostat.presence.event.keep.setpoint.Event(19)])
     >>> msg = cmd.make_msgs_from(state, first_state)
     >>> knx_stack.Long(value=msg[0].dpt.value)
     0x10058C00
@@ -55,10 +54,11 @@ class Setup(Command):
     True
     >>> "140" in str(msg[0].dpt)
     True
-    >>> second_state = home.appliance.thermostat.presence.state.keep.State([0.0, home.event.clima.season.Event.Winter,
-    ...                                                  home.event.clima.command.Event.Keep,
-    ...                                                  home.appliance.thermostat.presence.event.setpoint.Event(20),
-    ...                                                  home.appliance.thermostat.presence.event.keep.setpoint.Event(19)])
+    >>> second_state = home.appliance.thermostat.presence.state.keep.State(
+    ...     [0.0, home.event.clima.season.Event.Winter,
+    ...      home.event.clima.command.Event.Keep,
+    ...      home.appliance.thermostat.presence.event.setpoint.Event(20),
+    ...      home.appliance.thermostat.presence.event.keep.setpoint.Event(19)])
     >>> msg = cmd.make_msgs_from(first_state, second_state)
     >>> knx_stack.Long(value=msg[0].dpt.value)
     0x14058C00
@@ -66,11 +66,12 @@ class Setup(Command):
     True
     >>> "140" in str(msg[0].dpt)
     True
-    >>> third_state = home.appliance.thermostat.presence.state.on.State([0.0, home.event.clima.season.Event.Winter,
-    ...                                                  home.event.presence.Event.On,
-    ...                                                  home.event.clima.command.Event.On,
-    ...                                                  home.appliance.thermostat.presence.event.setpoint.Event(20),
-    ...                                                  home.appliance.thermostat.presence.event.keep.setpoint.Event(19)])
+    >>> third_state = home.appliance.thermostat.presence.state.on.State(
+    ...     [0.0, home.event.clima.season.Event.Winter,
+    ...      home.event.presence.Event.On,
+    ...      home.event.clima.command.Event.On,
+    ...      home.appliance.thermostat.presence.event.setpoint.Event(20),
+    ...      home.appliance.thermostat.presence.event.keep.setpoint.Event(19)])
     >>> msg = cmd.make_msgs_from(second_state, third_state)
     >>> knx_stack.Long(value=msg[0].dpt.value)
     0x18059600

@@ -63,8 +63,12 @@ class Stub(home.MyHome):
         triggers = list()
         for t in performers.triggers:
             stop_timer_performers = list()
-            stop_timer_performers.extend(self.find_group_of_performers("scene"))
-            stop_timer_performers.extend(self.find_group_of_performers("light"))
+            stop_timer_performers.extend(
+                self.find_group_of_performers("scene")
+            )
+            stop_timer_performers.extend(
+                self.find_group_of_performers("light")
+            )
             trigger = home.scheduler.trigger.protocol.timer.Trigger(
                 name="scene",
                 events=[home.appliance.light.event.forced.Event.On],
@@ -103,7 +107,9 @@ class TestLogics(TestCase):
                 asap=asap, dpt=dpt
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
 
     @unittest.skip("to be improved")

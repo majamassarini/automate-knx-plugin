@@ -2,7 +2,6 @@ import doctest
 import unittest
 import knx_plugin
 
-
 tests = list()
 tests.append(doctest.DocTestSuite("knx_plugin.gateway"))
 tests.append(doctest.DocTestSuite("knx_plugin.message"))
@@ -14,14 +13,20 @@ tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_value_temp"))
 tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_value_power"))
 tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_value_lux"))
 tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_value_lux.balance"))
-tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_value_power.consumption"))
-tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_value_power.production"))
+tests.append(
+    doctest.DocTestSuite("knx_plugin.trigger.dpt_value_power.consumption")
+)
+tests.append(
+    doctest.DocTestSuite("knx_plugin.trigger.dpt_value_power.production")
+)
 tests.append(doctest.DocTestSuite("knx_plugin.trigger.dpt_control_dimming"))
 tests.append(doctest.DocTestSuite("knx_plugin.command.custom_clima"))
 tests.append(doctest.DocTestSuite("knx_plugin.command.dpt_brightness"))
 tests.append(doctest.DocTestSuite("knx_plugin.command.dpt_switch"))
 
-tests.append(doctest.DocFileSuite("../docs/source/index.rst", package=knx_plugin))
+tests.append(
+    doctest.DocFileSuite("../docs/source/index.rst", package=knx_plugin)
+)
 
 
 def load_tests(loader, suite, ignore):

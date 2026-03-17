@@ -93,7 +93,10 @@ class SunBrightness(mean.Mean):
         max_sun_brightness: int = None,
     ):
         super(SunBrightness, self).__init__(
-            description, events, samples if samples else self.NUM_OF_SAMPLES, value
+            description,
+            events,
+            samples if samples else self.NUM_OF_SAMPLES,
+            value,
         )
         self._lowest_light_brightness = (
             lowest_light_brightness if lowest_light_brightness else 30
@@ -101,10 +104,16 @@ class SunBrightness(mean.Mean):
         self._highest_light_brightness = (
             highest_light_brightness if highest_light_brightness else 100
         )
-        self._min_sun_brightness = min_sun_brightness if min_sun_brightness else 5000
-        self._max_sun_brightness = max_sun_brightness if max_sun_brightness else 30000
-        self._event = home.appliance.light.event.lux_balancing.brightness.Event(
-            self._highest_light_brightness
+        self._min_sun_brightness = (
+            min_sun_brightness if min_sun_brightness else 5000
+        )
+        self._max_sun_brightness = (
+            max_sun_brightness if max_sun_brightness else 30000
+        )
+        self._event = (
+            home.appliance.light.event.lux_balancing.brightness.Event(
+                self._highest_light_brightness
+            )
         )
         self._coefficient = (
             self._highest_light_brightness - self._lowest_light_brightness
@@ -149,7 +158,7 @@ class SunBrightness(mean.Mean):
         max_sun_brightness: int = None,
     ):
         description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
+        description["addresses"] = addresses  # type: ignore[assignment]
         return cls(
             description,
             events,
@@ -164,6 +173,7 @@ class SunBrightness(mean.Mean):
     def create_brightness_event(
         self,
     ) -> home.appliance.light.event.lux_balancing.brightness.Event:
+        value: float
         if self._mean < self._min_sun_brightness:
             value = self._highest_light_brightness
         elif self._mean > self._max_sun_brightness:
@@ -172,7 +182,9 @@ class SunBrightness(mean.Mean):
             value = self._highest_light_brightness - (
                 (self._mean - self._min_sun_brightness) * self._coefficient
             )
-        return home.appliance.light.event.lux_balancing.brightness.Event(round(value))
+        return home.appliance.light.event.lux_balancing.brightness.Event(
+            round(value)
+        )
 
     def is_triggered(self, another_description: Description) -> bool:
         if super(SunBrightness, self).is_triggered(another_description):

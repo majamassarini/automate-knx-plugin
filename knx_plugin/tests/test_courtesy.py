@@ -114,13 +114,15 @@ class Stub(home.MyHome):
                 home.event.courtesy.Event.On,
             ],
         )
-        trigger_courtesy_off = knx_plugin.trigger.dpt_switch.Off.make_from_yaml(
-            [
-                0xEEEE,
-            ],
-            [
-                home.event.courtesy.Event.Off,
-            ],
+        trigger_courtesy_off = (
+            knx_plugin.trigger.dpt_switch.Off.make_from_yaml(
+                [
+                    0xEEEE,
+                ],
+                [
+                    home.event.courtesy.Event.Off,
+                ],
+            )
         )
         sensore_performer = home.Performer(
             appliance.name,
@@ -182,9 +184,9 @@ class TestLogics(TestCase):
                 is_notified = False
                 while not is_notified and i < self.MAX_LOOP:
                     await asyncio.sleep(0.3)
-                    is_notified = tc.myhome.appliances.find("una luce").is_notified(
-                        home.event.courtesy.Event.On
-                    )
+                    is_notified = tc.myhome.appliances.find(
+                        "una luce"
+                    ).is_notified(home.event.courtesy.Event.On)
                     i += 1
 
             async def emulate_bus_events(self):
@@ -200,7 +202,9 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                 await asyncio.sleep(0.1)
 
         test = Test("test_state")

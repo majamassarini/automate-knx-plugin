@@ -39,9 +39,13 @@ class Stub(home.MyHome):
 
     def _build_performers(self):
         appliance = self.appliances.find("un termostato")
-        command = knx_plugin.command.custom_clima.Setup.make_from_yaml([0xBBBB], 19, 20)
-        trigger_on = knx_plugin.trigger.custom_clima.OnAutomatico.make_from_yaml(
-            [0xBBBB], [], 19, 20
+        command = knx_plugin.command.custom_clima.Setup.make_from_yaml(
+            [0xBBBB], 19, 20
+        )
+        trigger_on = (
+            knx_plugin.trigger.custom_clima.OnAutomatico.make_from_yaml(
+                [0xBBBB], [], 19, 20
+            )
         )
         trigger_off = knx_plugin.trigger.custom_clima.Off.make_from_yaml(
             [0xBBBB], [], 19, 20
@@ -117,19 +121,25 @@ class TestLogics(TestCase):
                 asap=asap, dpt=dpt_on
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_off
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
             msg = knx_stack.layer.application.a_group_value_write.ind.Msg(
                 asap=asap, dpt=dpt_keep
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
 
     @unittest.skip("to be improved")

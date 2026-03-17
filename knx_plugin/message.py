@@ -1,7 +1,9 @@
+from __future__ import annotations
+
 import copy
 import logging
 
-from typing import Type, Union
+from typing import Any, Type, Union
 
 import home
 import knx_stack
@@ -29,8 +31,10 @@ class Description(home.protocol.Description):
             if "addresses" in data
             else []
         )
-        self._asaps = []
-        self._label = "{} {}".format(self._dpt.__class__.__name__, self._addresses)
+        self._asaps: list[Any] = []
+        self._label = "{} {}".format(
+            self._dpt.__class__.__name__, self._addresses
+        )
 
         self._logger = logging.getLogger(__name__)
 
@@ -51,18 +55,16 @@ class Description(home.protocol.Description):
         self._addresses = value
 
     @classmethod
-    def make(
-        cls, addresses: list[knx_stack.Address]
-    ) -> "knx_plugin.message.Description":
+    def make(cls, addresses: list[knx_stack.Address]) -> Description:
         description = copy.deepcopy(cls.DPT)
         dsc = cls(description)
         dsc.addresses = addresses
         return dsc
 
     @classmethod
-    def make_from_yaml(cls, addresses: list[int]) -> "knx_plugin.message.Description":
+    def make_from_yaml(cls, addresses: list[int]) -> Description:
         description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
+        description["addresses"] = addresses  # type: ignore[assignment]
         return cls(description)
 
     @classmethod
@@ -72,8 +74,10 @@ class Description(home.protocol.Description):
             knx_stack.layer.application.a_group_value_read.ind.Msg,
             knx_stack.layer.application.a_group_value_write.ind.Msg,
         ],
-    ) -> "knx_plugin.message.Description":
-        dpt_description = knx_stack.datapointtypes.Description_Factory.make(msg.dpt)
+    ) -> Description:
+        dpt_description = knx_stack.datapointtypes.Description_Factory.make(
+            msg.dpt
+        )
         description = {
             "type": "knx",
             "name": dpt_description[0],
@@ -94,11 +98,14 @@ class Description(home.protocol.Description):
 
     def __hash__(self):
         s = "class: {} asaps: {}".format(
-            self.dpt.__class__.__name__, [str(asap.value) for asap in self._asaps]
+            self.dpt.__class__.__name__,
+            [str(asap.value) for asap in self._asaps],
         )
         return hash(s)
 
-    def associate_with(self, association_table: knx_stack.AssociationTable) -> None:
+    def associate_with(
+        self, association_table: knx_stack.AssociationTable
+    ) -> None:
         for address in self._addresses:
             tsap = association_table.get_tsap(address)
             asaps = association_table.get_asaps(tsap)
@@ -122,7 +129,11 @@ class Description(home.protocol.Description):
 
         self._logger.info(
             "associate %s for %s to asap %s"
-            % (str(self._addresses), str(self.dpt.__class__.__name__), str(self.asaps))
+            % (
+                str(self._addresses),
+                str(self.dpt.__class__.__name__),
+                str(self.asaps),
+            )
         )
 
     def __str__(self, *args, **kwargs):
@@ -157,7 +168,7 @@ class Command(Description, home.protocol.Command):
 
     def execute(
         self,
-    ) -> list["knx_stack.layer.application.a_group_value_write.req.Msg"]:
+    ) -> list[knx_stack.layer.application.a_group_value_write.req.Msg]:
         req_msgs = []
         for asap in self._asaps:
             req_msgs.append(
@@ -165,5 +176,7 @@ class Command(Description, home.protocol.Command):
                     asap=asap, dpt=self._dpt
                 )
             )
-        self._logger.info("executed %s with msgs %s" % (str(self), str(req_msgs)))
+        self._logger.info(
+            "executed %s with msgs %s" % (str(self), str(req_msgs))
+        )
         return req_msgs

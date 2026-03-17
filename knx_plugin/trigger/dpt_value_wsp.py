@@ -1,4 +1,3 @@
-
 import home
 
 from knx_plugin.message import Description
@@ -115,5 +114,8 @@ class Weak(LesserThan):
         value: float = None,
     ):
         super(Weak, self).__init__(
-            description, events, samples if samples else self.NUM_OF_SAMPLES, value
+            description,
+            events,
+            samples if samples else self.NUM_OF_SAMPLES,
+            value,
         )

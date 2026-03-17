@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 
 from collections.abc import Callable, Iterable
-from typing import Union
+from typing import Any, Union
 
 import home
 import knx_stack
@@ -16,16 +18,21 @@ class Gateway(home.protocol.Gateway):
     PROTOCOL = Description.PROTOCOL
 
     def __init__(
-        self, client: "knx_plugin.Client", host: str = "0.0.0.0", port: int = 5555
+        self,
+        client: Any,
+        host: str = "0.0.0.0",
+        port: int = 5555,
     ):
         self._client = client
         self._host = host
         self._port = port
-        self._triggers = set()
+        self._triggers: set[Trigger] = set()
         self._protocol_instance = None
-        self._transport = None
+        self._transport: Union[asyncio.Transport, None] = None
 
-        address_table = knx_stack.AddressTable(knx_stack.Address(0x0000), [], 1000)
+        address_table = knx_stack.AddressTable(
+            knx_stack.Address(0x0000), [], 1000
+        )
         self._association_table = knx_stack.AssociationTable(address_table, [])
         self._datapointtypes = knx_stack.GroupObjectTable()
         self._knx_state = None
@@ -46,15 +53,17 @@ class Gateway(home.protocol.Gateway):
 
     def _associate(self, descriptions):
         for description in descriptions:
-            description.associate(self._association_table, self._datapointtypes)
+            description.associate(
+                self._association_table, self._datapointtypes
+            )
 
         self.logger.info(self._association_table)
         self.logger.info(self._datapointtypes)
 
-    def associate_commands(self, descriptions: "knx_plugin.message.Command") -> None:
+    def associate_commands(self, descriptions: Iterable[Description]) -> None:
         self._associate(descriptions)
 
-    def associate_triggers(self, descriptions: "knx_plugin.message.Trigger") -> None:
+    def associate_triggers(self, descriptions: Iterable[Trigger]) -> None:
         self._associate(descriptions)
 
     async def run(self, other_tasks: Iterable[Callable]) -> None:
@@ -65,7 +74,7 @@ class Gateway(home.protocol.Gateway):
                 on_con_lost, self._knx_state, self._wrap_tasks(other_tasks)
             )
             try:
-                (self._transport, _) = await loop.create_connection(
+                self._transport, _ = await loop.create_connection(
                     lambda: self._protocol_instance, self._host, self._port
                 )
                 try:
@@ -77,22 +86,33 @@ class Gateway(home.protocol.Gateway):
                 self.logger.fatal(e)
                 await asyncio.sleep(60)
 
-
     @staticmethod
     def make_trigger(
         msg: Union[
-            "knx_stack.layer.application.a_group_value_write.ind.Msg",
-            "knx_stack.layer.application.a_group_value_read.ind.Msg",
-        ]
+            knx_stack.layer.application.a_group_value_write.ind.Msg,
+            knx_stack.layer.application.a_group_value_read.ind.Msg,
+        ],
     ):
         logger = logging.getLogger(__name__)
         if (
-            isinstance(msg, knx_stack.layer.application.a_group_value_write.ind.Msg)
-            or isinstance(msg, knx_stack.layer.application.a_group_value_write.ind.Msg)
-            or isinstance(msg, knx_stack.layer.application.a_group_value_read.req.Msg)
-            or isinstance(msg, knx_stack.layer.application.a_group_value_write.req.Msg)
-            or isinstance(msg, knx_stack.layer.application.a_group_value_write.con.Msg)
-            or isinstance(msg, knx_stack.layer.application.a_group_value_write.con.Msg)
+            isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.ind.Msg
+            )
+            or isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.ind.Msg
+            )
+            or isinstance(
+                msg, knx_stack.layer.application.a_group_value_read.req.Msg
+            )
+            or isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.req.Msg
+            )
+            or isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.con.Msg
+            )
+            or isinstance(
+                msg, knx_stack.layer.application.a_group_value_write.con.Msg
+            )
         ):
             trigger = Trigger.make_from(msg)
             logger.debug("{} for asaps {}".format(trigger.dpt, trigger.asaps))
@@ -109,11 +129,11 @@ class Gateway(home.protocol.Gateway):
         self,
         msgs: Iterable[
             Union[
-                "knx_stack.layer.application.a_group_value_write.req.Msg",
-                "knx_stack.layer.application.a_group_value_read.req.Msg",
+                knx_stack.layer.application.a_group_value_write.req.Msg,
+                knx_stack.layer.application.a_group_value_read.req.Msg,
             ]
         ],
-        *args
+        *args,
     ):
         while not self._protocol_instance:
             await asyncio.sleep(0.01)
