@@ -47,6 +47,6 @@ class Activate(Parent):
         events: list[home.Event] = None,
         number: int = None,
     ):
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses  # type: ignore[assignment]
+        description: dict[str, Any] = copy.deepcopy(cls.DPT)
+        description["addresses"] = addresses
         return cls(description, events, number)
