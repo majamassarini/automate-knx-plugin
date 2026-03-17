@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import home
 import copy
 import knx_stack
@@ -10,24 +12,22 @@ class Trigger(home.protocol.Trigger, Description):
 
     @classmethod
     def make(
-        cls, addresses: list[knx_stack.Address], events: "home.Event" = None
-    ) -> "knx_plugin.Trigger":
+        cls, addresses: list[knx_stack.Address], events: home.Event = None
+    ) -> Trigger:
         description = copy.deepcopy(cls.DPT)
-        dsc = cls(description, events)
+        dsc = cls(description, events)  # type: ignore[call-arg]
         dsc.addresses = addresses
         return dsc
 
     @classmethod
     def make_from_yaml(
-        cls, addresses: list[int], events: "home.Event" = None
-    ) -> "knx_plugin.Trigger":
+        cls, addresses: list[int], events: home.Event = None
+    ) -> Trigger:
         description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
-        return cls(description, events)
+        description["addresses"] = addresses  # type: ignore[assignment]
+        return cls(description, events)  # type: ignore[call-arg]
 
-    def is_triggered(
-        self, another_description: "knx_plugin.message.Description"
-    ) -> bool:
+    def is_triggered(self, another_description: Description) -> bool:
         if super(Trigger, self).is_triggered(another_description):
             if set(self.asaps).intersection(set(another_description.asaps)):
                 return True
@@ -69,12 +69,11 @@ class Equal(Trigger, home.protocol.Trigger):
       False
     """
 
-    def is_triggered(
-        self, another_description: "knx_plugin.message.Description"
-    ) -> bool:
+    def is_triggered(self, another_description: Description) -> bool:
         if super(Equal, self).is_triggered(another_description):
             triggered = self.dpt.value == another_description.dpt.value
             return triggered
+        return False
 
     def __str__(self):
         s = super(Equal, self).__str__()
@@ -89,25 +88,24 @@ class Always(Trigger, home.protocol.Trigger, home.protocol.mean.Mixin):
        to the knx_stack.datapointtypes.DPT **type** described by the trigger
     """
 
-    def is_triggered(
-        self, another_description: "knx_plugin.message.Description"
-    ) -> bool:
+    def is_triggered(self, another_description: Description) -> bool:
         if super(Always, self).is_triggered(another_description):
             if set(self.asaps) & set(another_description.asaps):
                 return True
+        return False
 
     def make_new_state_from(
         self,
-        another_description: "knx_plugin.message.Description",
-        old_state: "home.appliance.State",
-    ) -> "home.appliance.State":
+        another_description: Description,
+        old_state: home.appliance.State,
+    ) -> home.appliance.State:
         new_state = super(Always, self).make_new_state_from(
             another_description, old_state
         )
         new_state = new_state.next(another_description.dpt.decode())
         return new_state
 
-    def get_value(self, description: "knx_plugin.message.Description") -> float:
+    def get_value(self, description: Description) -> float:
         return description.dpt.decode()
 
 
@@ -122,12 +120,12 @@ class ComparisonMixin:
     def make_from_yaml(
         cls,
         addresses: list[int],
-        events: "home.Event" = None,
+        events: home.Event = None,
         value: int = None,
-    ) -> "knx_plugin.Trigger":
-        description = copy.deepcopy(cls.DPT)
-        description["addresses"] = addresses
-        return cls(description, events, value)
+    ) -> Trigger:
+        description = copy.deepcopy(cls.DPT)  # type: ignore[attr-defined]
+        description["addresses"] = addresses  # type: ignore[assignment]
+        return cls(description, events, value)  # type: ignore[call-arg, return-value]
 
 
 class GreaterThan(ComparisonMixin, Trigger, home.protocol.Trigger):
@@ -144,27 +142,28 @@ class GreaterThan(ComparisonMixin, Trigger, home.protocol.Trigger):
 
     def __init__(
         self,
-        description: "knx_plugin.message.Description",
-        events: "home.Event" = None,
+        description: Description,
+        events: home.Event = None,
         value: int = None,
     ):
         description = self.override_value(description, value)
-        super(GreaterThan, self).__init__(description, events)
+        super(GreaterThan, self).__init__(description, events)  # type: ignore[call-arg]
 
-    def is_triggered(
-        self, another_description: "knx_plugin.message.Description"
-    ) -> bool:
+    def is_triggered(self, another_description: Description) -> bool:
         if super(GreaterThan, self).is_triggered(another_description):
             if set(self.asaps).intersection(set(another_description.asaps)):
-                triggered = self.dpt.decode() < another_description.dpt.decode()
+                triggered = (
+                    self.dpt.decode() < another_description.dpt.decode()
+                )
                 return triggered
+        return False
 
     def __str__(self):
         s = super(GreaterThan, self).__str__()
         return "{} greater than {}".format(s, self.dpt.decode())
 
 
-class LesserThan(Trigger, home.protocol.Trigger, ComparisonMixin):
+class LesserThan(Trigger, home.protocol.Trigger, ComparisonMixin):  # type: ignore[misc]
     """A trigger triggered when
 
     1) it has some ASAPs in common with the compared Description and
@@ -174,25 +173,28 @@ class LesserThan(Trigger, home.protocol.Trigger, ComparisonMixin):
 
     def __init__(
         self,
-        description: "knx_plugin.message.Description",
-        events: "home.Event" = None,
+        description: Description,
+        events: home.Event = None,
         value: int = None,
     ):
         description = self.override_value(description, value)
-        super(LesserThan, self).__init__(description, events)
+        super(LesserThan, self).__init__(description, events)  # type: ignore[call-arg]
 
     def is_triggered(self, another_description) -> bool:
         if super(LesserThan, self).is_triggered(another_description):
             if set(self.asaps).intersection(set(another_description.asaps)):
-                triggered = self.dpt.decode() > another_description.dpt.decode()
+                triggered = (
+                    self.dpt.decode() > another_description.dpt.decode()
+                )
                 return triggered
+        return False
 
     def __str__(self):
         s = super(LesserThan, self).__str__()
         return "{} lesser than {}".format(s, self.dpt.decode())
 
 
-class InBetween(Trigger, home.protocol.Trigger, ComparisonMixin):
+class InBetween(Trigger, home.protocol.Trigger, ComparisonMixin):  # type: ignore[misc]
     """A trigger triggered when
 
     1) it has some ASAPs in common with the compared Description and
@@ -203,18 +205,16 @@ class InBetween(Trigger, home.protocol.Trigger, ComparisonMixin):
 
     def __init__(
         self,
-        description: "knx_plugin.message.Description",
-        events: "home.Event" = None,
+        description: Description,
+        events: home.Event = None,
         value: int = None,
         range: int = None,
     ):
         description = self.override_value(description, value)
-        super(InBetween, self).__init__(description, events)
+        super(InBetween, self).__init__(description, events)  # type: ignore[call-arg]
         self._range = range if range else 1
 
-    def is_triggered(
-        self, another_description: "knx_plugin.message.Description"
-    ) -> bool:
+    def is_triggered(self, another_description: Description) -> bool:
         if super(InBetween, self).is_triggered(another_description):
             triggered = (
                 self.dpt.decode()

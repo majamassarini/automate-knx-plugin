@@ -71,9 +71,9 @@ class TestLogics(TestCase):
                 is_notified = False
                 while not is_notified and i < self.MAX_LOOP:
                     await asyncio.sleep(0.3)
-                    is_notified = tc.myhome.appliances.find("un sensore").is_notified(
-                        496.0
-                    )
+                    is_notified = tc.myhome.appliances.find(
+                        "un sensore"
+                    ).is_notified(496.0)
                     i += 1
 
             async def emulate_bus_events(self):
@@ -90,10 +90,16 @@ class TestLogics(TestCase):
                         asap=asap, dpt=dpt
                     )
                     msg = tc._knx_gateway.protocol_instance.encode(msg)
-                    tc._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+                    tc._knx_gateway.protocol_instance.data_received(
+                        msg.encode("utf-8")
+                    )
                     await asyncio.sleep(0.1)
 
         test = Test("test_state")
-        tc.assertFalse(tc.myhome.appliances.find("un sensore").is_notified(496.0))
+        tc.assertFalse(
+            tc.myhome.appliances.find("un sensore").is_notified(496.0)
+        )
         test.run()
-        tc.assertTrue(tc.myhome.appliances.find("un sensore").is_notified(496.0))
+        tc.assertTrue(
+            tc.myhome.appliances.find("un sensore").is_notified(496.0)
+        )

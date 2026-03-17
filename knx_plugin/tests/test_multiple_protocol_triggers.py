@@ -63,7 +63,9 @@ class Stub(home.MyHome):
             )
             self.positive_triggers.append(trigger_spotted)
             self.negative_triggers.append(trigger_missed)
-            performer = home.Performer(appliance.name, appliance, [], [trigger_spotted])
+            performer = home.Performer(
+                appliance.name, appliance, [], [trigger_spotted]
+            )
             performers.append(performer)
         return performers
 
@@ -86,7 +88,10 @@ class Stub(home.MyHome):
 
     def _build_schedule_infos(self):
         return [
-            (self.find_group_of_performers("luci"), self.find_scheduler_triggers("and"))
+            (
+                self.find_group_of_performers("luci"),
+                self.find_scheduler_triggers("and"),
+            )
         ]
 
 
@@ -111,9 +116,9 @@ class TestLogics(TestCase):
                 is_notified = False
                 while not is_notified and i < self.MAX_LOOP:
                     await asyncio.sleep(0.3)
-                    is_notified = tc.myhome.appliances.find("una luce").is_notified(
-                        home.appliance.light.event.forced.Event.On
-                    )
+                    is_notified = tc.myhome.appliances.find(
+                        "una luce"
+                    ).is_notified(home.appliance.light.event.forced.Event.On)
                     i += 1
 
             async def emulate_bus_events(self):

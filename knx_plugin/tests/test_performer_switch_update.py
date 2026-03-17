@@ -81,7 +81,9 @@ class TestLogics(TestCase):
                 asap=asap, dpt=dpt
             )
             msg = self._knx_gateway.protocol_instance.encode(msg)
-            self._knx_gateway.protocol_instance.data_received(msg.encode("utf-8"))
+            self._knx_gateway.protocol_instance.data_received(
+                msg.encode("utf-8")
+            )
             await asyncio.sleep(0.1)
 
     @unittest.skip("to be improved")

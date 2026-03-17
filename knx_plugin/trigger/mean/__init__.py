@@ -19,18 +19,21 @@ class Mean(Trigger, home.protocol.Trigger):
     ):
         if value:
             description["fields"]["decoded_value"] = int(value)
-        super(Mean, self).__init__(description, events)
-        self._samples = collections.deque(maxlen=(samples if samples else 1))
-        self._mean = None
+        super(Mean, self).__init__(description, events)  # type: ignore[call-arg]
+        self._samples: collections.deque[float] = collections.deque(
+            maxlen=(samples if samples else 1)
+        )
+        self._mean: float | None = None
 
     def is_triggered(self, another_description: Description) -> bool:
         if super(Mean, self).is_triggered(another_description):
             if set(self.asaps).intersection(set(another_description.asaps)):
                 self._samples.append(another_description.dpt.decode())
                 self._mean = functools.reduce(
-                    lambda a, b: a + b, self._samples, 0
+                    lambda a, b: a + b, self._samples, 0.0
                 ) / len(self._samples)
                 return True
+        return False
 
     @classmethod
     def make(
@@ -68,7 +71,8 @@ class GreaterThan(Mean):
     def is_triggered(self, another_description: Description) -> bool:
         if super(GreaterThan, self).is_triggered(another_description):
             triggered = self.dpt.decode() < self._mean
-            return triggered
+            return triggered  # type: ignore[return-value]
+        return False
 
     def __str__(self):
         s = super(GreaterThan, self).__str__()
@@ -93,7 +97,8 @@ class LesserThan(Mean):
     def is_triggered(self, another_description: Description) -> bool:
         if super(LesserThan, self).is_triggered(another_description):
             triggered = self.dpt.decode() > self._mean
-            return triggered
+            return triggered  # type: ignore[return-value]
+        return False
 
     def __str__(self):
         s = super(LesserThan, self).__str__()
@@ -130,7 +135,9 @@ class InBetween(Mean):
     def is_triggered(self, another_description: Description) -> bool:
         if super(InBetween, self).is_triggered(another_description):
             triggered = (
-                self.dpt.decode() < self._mean < (self.dpt.decode() + self._range)
+                self.dpt.decode()
+                < self._mean
+                < (self.dpt.decode() + self._range)
             )
             return triggered
         return False

@@ -54,7 +54,10 @@ class Stub(home.MyHome):
         return performers
 
     def _build_group_of_performers(self):
-        return {"curtains": [self._performers[0]], "sensors": [self._performers[1]]}
+        return {
+            "curtains": [self._performers[0]],
+            "sensors": [self._performers[1]],
+        }
 
     def _build_scheduler_triggers(self):
         triggers = list()
