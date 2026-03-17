@@ -124,7 +124,7 @@ class TestLogics(TestCase):
                 home.appliance.light.event.forced.Event.Not
             )
         )
-        asyncio.get_event_loop().create_task(self.emulate_bus_events())
+        asyncio.get_running_loop().create_task(self.emulate_bus_events())
         self.execute(myhome)
         self.assertTrue(
             myhome.appliances.find("scene").is_notified(

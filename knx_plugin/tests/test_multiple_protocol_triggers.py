@@ -102,7 +102,7 @@ class TestLogics(TestCase):
 
             async def asyncSetUp(self):
                 tc.add_knx_gateway(tc.myhome)
-                self._loop = asyncio.get_event_loop()
+                self._loop = asyncio.get_running_loop()
                 tc.create_tasks(self._loop, tc.myhome)
                 self._loop.create_task(self.emulate_bus_events())
 

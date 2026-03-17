@@ -72,7 +72,7 @@ class Client(Parent):
             addr_data_endpoint=self._local_addr,
             port_data_endpoint=self._local_port,
         )
-        self._loop.create_task(self.manage_connect_timeout())
+        asyncio.get_running_loop().create_task(self.manage_connect_timeout())
         msg = knx_stack.encode_msg(self._state, connect_req)
         self._transport.sendto(self.encode(msg), (self._remote_addr, self._remote_port))
         self._connect_timeout = datetime.datetime.now()
@@ -128,9 +128,9 @@ class Client(Parent):
         (reqs, cons, inds, others) = self.filter(msgs)
         for task in self._tasks:
             for con in cons:
-                self._loop.create_task(task(con))
+                asyncio.get_running_loop().create_task(task(con))
             for ind in inds:
-                self._loop.create_task(task(ind))
+                asyncio.get_running_loop().create_task(task(ind))
             for con in cons:
                 self.manage_request_confirmation(con)
             for other in others:
@@ -162,7 +162,7 @@ class Client(Parent):
                 self.logger.info("ConnectRes received")
                 if msg.status == knx_stack.knxnet_ip.ErrorCodes.E_NO_ERROR:
                     self._connect_alive_timeout = datetime.datetime.now()
-                    self._loop.create_task(self.manage_connect_alive_timeout())
+                    asyncio.get_running_loop().create_task(self.manage_connect_alive_timeout())
 
                     # Connection successful - reset reconnection backoff
                     if self._reconnect_attempt > 0:
@@ -217,7 +217,7 @@ class Client(Parent):
                     )
                     # Schedule reconnection with exponential backoff
                     if self._transport:
-                        self._loop.create_task(self._reconnect_with_backoff())
+                        asyncio.get_running_loop().create_task(self._reconnect_with_backoff())
         elif isinstance(msg, knx_stack.knxnet_ip.core.connectionstate.res.Msg):
             # Received response to our keepalive request
             self.logger.info("Received connectionstate response: {}".format(msg))
@@ -318,7 +318,7 @@ class Client(Parent):
                                 )
                                 # Schedule reconnection with exponential backoff
                                 if self._transport:
-                                    self._loop.create_task(self._reconnect_with_backoff())
+                                    asyncio.get_running_loop().create_task(self._reconnect_with_backoff())
                                 break
                         self._connect_alive_response_timeout = None
                         self._got_alive_response = False

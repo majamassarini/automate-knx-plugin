@@ -10,7 +10,7 @@ from knx_plugin.tests.testcase import TestCase
 class Stub(home.MyHome):
     class Thermometerrr(home.appliance.sensor.thermometer.Appliance):
         def update_by(self, trigger, description):
-            asyncio.get_event_loop().stop()
+            asyncio.get_running_loop().stop()
             return super(Stub.Thermometerrr, self).update_by(trigger, description)
 
     def _build_appliances(self):
@@ -62,7 +62,7 @@ class TestLogics(TestCase):
 
             async def asyncSetUp(self):
                 tc.add_knx_gateway(tc.myhome)
-                self._loop = asyncio.get_event_loop()
+                self._loop = asyncio.get_running_loop()
                 tc.create_tasks(self._loop, tc.myhome)
                 self._loop.create_task(self.emulate_bus_events())
 
