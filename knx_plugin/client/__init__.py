@@ -13,7 +13,6 @@ class MsgNotEncoded(Exception):
 class Client(asyncio.Protocol):
 
     def __init__(self, on_con_lost, knx_state: "knx_stack.State", tasks: Iterable["Callable"]):
-        self._loop = asyncio.get_running_loop()
         self._transport = None
         self._tasks = set(tasks)
         self._state = knx_state

@@ -16,7 +16,7 @@ class Stub(home.MyHome):
         def update_by(self, trigger, description):
             self._wait_for_n_updates += 1
             if self._wait_for_n_updates >= 8:
-                asyncio.get_event_loop().stop()
+                asyncio.get_running_loop().stop()
             return super(Stub.Dimmerrr, self).update_by(trigger, description)
 
     def _build_appliances(self):
@@ -83,7 +83,7 @@ class TestLogics(TestCase):
 
             async def asyncSetUp(self):
                 tc.add_knx_gateway(tc.myhome)
-                self._loop = asyncio.get_event_loop()
+                self._loop = asyncio.get_running_loop()
                 tc.create_tasks(self._loop, tc.myhome)
                 self._loop.create_task(self.emulate_bus_events())
 

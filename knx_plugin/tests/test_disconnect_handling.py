@@ -13,11 +13,10 @@ from knx_plugin.client.knxnet_ip import Client
 
 class TestDisconnectHandling(unittest.TestCase):
 
-    @unittest.mock.patch('asyncio.get_event_loop')
-    def test_manage_disconnect_request(self, mock_get_event_loop):
+    @unittest.mock.patch('asyncio.get_running_loop')
+    def test_manage_disconnect_request(self, mock_get_running_loop):
         """Test that client handles DISCONNECT_REQUEST from gateway"""
-        # Mock the event loop
-        mock_get_event_loop.return_value = unittest.mock.Mock()
+        mock_get_running_loop.return_value = unittest.mock.Mock()
 
         # Create a mock disconnect request
         disconnect_req = knx_stack.knxnet_ip.core.disconnect.req.Msg(
@@ -43,7 +42,6 @@ class TestDisconnectHandling(unittest.TestCase):
 
         # Mock transport
         client._transport = unittest.mock.Mock()
-        client._loop = unittest.mock.Mock()
 
         # Call manage_disconnect_request
         client.manage_disconnect_request(disconnect_req)
@@ -54,11 +52,12 @@ class TestDisconnectHandling(unittest.TestCase):
         # Verify transport.close was called
         self.assertTrue(client._transport.close.called)
 
-    @unittest.mock.patch('asyncio.get_event_loop')
-    def test_manage_server_tunneling_request_with_error(self, mock_get_event_loop):
+    @unittest.mock.patch('asyncio.get_running_loop')
+    def test_manage_server_tunneling_request_with_error(
+        self, mock_get_running_loop
+    ):
         """Test that client ACKs tunneling requests even with errors"""
-        # Mock the event loop
-        mock_get_event_loop.return_value = unittest.mock.Mock()
+        mock_get_running_loop.return_value = unittest.mock.Mock()
 
         # Create a tunneling request with E_SEQUENCE_NUMBER error
         tunneling_req = knx_stack.decode.knxnet_ip.tunneling.req.Msg(
@@ -84,7 +83,6 @@ class TestDisconnectHandling(unittest.TestCase):
 
         # Mock transport
         client._transport = unittest.mock.Mock()
-        client._loop = unittest.mock.Mock()
 
         # Call manage_server_tunneling_request
         client.manage_server_tunneling_request(tunneling_req)
@@ -92,14 +90,17 @@ class TestDisconnectHandling(unittest.TestCase):
         # Verify ACK was sent (transport.sendto called)
         self.assertTrue(client._transport.sendto.called)
 
-        # Verify reconnection was scheduled (transport close happens inside _reconnect_with_backoff)
-        self.assertTrue(client._loop.create_task.called)
+        # Verify reconnection was scheduled via the event loop
+        self.assertTrue(
+            mock_get_running_loop.return_value.create_task.called
+        )
 
-    @unittest.mock.patch('asyncio.get_event_loop')
-    def test_manage_server_tunneling_request_success(self, mock_get_event_loop):
+    @unittest.mock.patch('asyncio.get_running_loop')
+    def test_manage_server_tunneling_request_success(
+        self, mock_get_running_loop
+    ):
         """Test that client handles successful tunneling requests"""
-        # Mock the event loop
-        mock_get_event_loop.return_value = unittest.mock.Mock()
+        mock_get_running_loop.return_value = unittest.mock.Mock()
 
         # Create a successful tunneling request
         tunneling_req = knx_stack.decode.knxnet_ip.tunneling.req.Msg(
@@ -125,7 +126,6 @@ class TestDisconnectHandling(unittest.TestCase):
 
         # Mock transport
         client._transport = unittest.mock.Mock()
-        client._loop = unittest.mock.Mock()
 
         # Call manage_server_tunneling_request
         client.manage_server_tunneling_request(tunneling_req)

@@ -41,11 +41,11 @@ class TestGateway(unittest.TestCase):
                     knx_plugin.client.usbhid.Client
                 )
                 self._gateway.associate_triggers([trigger])
-                self._gateway._loop.create_connection = unittest.mock.AsyncMock(
+
+                loop = asyncio.get_running_loop()
+                loop.create_connection = unittest.mock.AsyncMock(
                     return_value=(1, None)
                 )
-
-                loop = asyncio.get_event_loop()
                 loop.create_task(self.postpone_gw_running())
                 loop.create_task(self.emulate_bus_event())
 
