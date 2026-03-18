@@ -19,7 +19,7 @@ class Mean(Trigger, home.protocol.Trigger):
     ):
         if value:
             description["fields"]["decoded_value"] = int(value)
-        super(Mean, self).__init__(description, events)  # type: ignore[call-arg]
+        super(Mean, self).__init__(description, events)
         self._samples: collections.deque[float] = collections.deque(
             maxlen=(samples if samples else 1)
         )

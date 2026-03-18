@@ -26,7 +26,7 @@ class Activate(Parent):
         number: int = None,
     ):
         description["fields"]["number"] = number if number else 0
-        super(Activate, self).__init__(description, events)  # type: ignore[call-arg]
+        super(Activate, self).__init__(description, events)
 
     @classmethod
     def make(
