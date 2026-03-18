@@ -25,7 +25,7 @@ class Equal(Parent):
         index: int = None,
     ):
         description["fields"]["index"] = index if index else 0
-        super(Equal, self).__init__(description, events)  # type: ignore[call-arg]
+        super(Equal, self).__init__(description, events)
 
     @classmethod
     def make(
