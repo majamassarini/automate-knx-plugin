@@ -11,12 +11,15 @@ from knx_plugin.message import Description
 class Trigger(home.protocol.Trigger, Description):
     """A generic KNX trigger triggered when it has some ASAPs in common with the compared Description"""
 
+    def __init__(self, description: dict, events: home.Event = None):
+        super().__init__(description, events)  # type: ignore[call-arg]
+
     @classmethod
     def make(
         cls, addresses: list[knx_stack.Address], events: home.Event = None
     ) -> Trigger:
         description = copy.deepcopy(cls.DPT)
-        dsc = cls(description, events)  # type: ignore[call-arg]
+        dsc = cls(description, events)
         dsc.addresses = addresses
         return dsc
 
@@ -26,7 +29,7 @@ class Trigger(home.protocol.Trigger, Description):
     ) -> Trigger:
         description: dict[str, Any] = copy.deepcopy(cls.DPT)
         description["addresses"] = addresses
-        return cls(description, events)  # type: ignore[call-arg]
+        return cls(description, events)
 
     def is_triggered(self, another_description: Description) -> bool:
         if super(Trigger, self).is_triggered(another_description):
@@ -148,7 +151,7 @@ class GreaterThan(ComparisonMixin, Trigger, home.protocol.Trigger):
         value: int = None,
     ):
         description = self.override_value(description, value)
-        super(GreaterThan, self).__init__(description, events)  # type: ignore[call-arg]
+        super(GreaterThan, self).__init__(description, events)
 
     def is_triggered(self, another_description: Description) -> bool:
         if super(GreaterThan, self).is_triggered(another_description):
@@ -179,7 +182,7 @@ class LesserThan(Trigger, home.protocol.Trigger, ComparisonMixin):  # type: igno
         value: int = None,
     ):
         description = self.override_value(description, value)
-        super(LesserThan, self).__init__(description, events)  # type: ignore[call-arg]
+        super(LesserThan, self).__init__(description, events)
 
     def is_triggered(self, another_description) -> bool:
         if super(LesserThan, self).is_triggered(another_description):
@@ -212,7 +215,7 @@ class InBetween(Trigger, home.protocol.Trigger, ComparisonMixin):  # type: ignor
         range: int = None,
     ):
         description = self.override_value(description, value)
-        super(InBetween, self).__init__(description, events)  # type: ignore[call-arg]
+        super(InBetween, self).__init__(description, events)
         self._range = range if range else 1
 
     def is_triggered(self, another_description: Description) -> bool:
