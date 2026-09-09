@@ -10,15 +10,15 @@ on:
       knx_stack_branch:
         description: "knx-stack branch to install"
         required: false
-        default: "dev"
+        default: "main"
       automate_home_branch:
         description: "automate-home branch to install"
         required: false
-        default: "dev"
+        default: "main"
 
 env:
-  KNX_STACK_BRANCH: ${{ github.event.inputs.knx_stack_branch || github.base_ref || github.ref_name || 'dev' }}
-  AUTOMATE_HOME_BRANCH: ${{ github.event.inputs.automate_home_branch || github.base_ref || github.ref_name || 'dev' }}
+  KNX_STACK_BRANCH: ${{ github.event.inputs.knx_stack_branch || 'main' }}
+  AUTOMATE_HOME_BRANCH: ${{ github.event.inputs.automate_home_branch || 'main' }}
 
 jobs:
   checks:
