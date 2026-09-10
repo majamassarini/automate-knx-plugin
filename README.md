@@ -1,6 +1,6 @@
 # automate-knx-plugin
-[![Build Status](https://app.travis-ci.com/majamassarini/automate-knx-plugin.svg?branch=main)](https://app.travis-ci.com/majamassarini/automate-knx-plugin)
-[![codecov](https://codecov.io/gh/majamassarini/automate-knx-plugin/branch/main/graph/badge.svg?token=1W74jfuBfb)](https://codecov.io/gh/majamassarini/automate-knx-plugin)
+[![Unit Tests](https://github.com/majamassarini/automate-knx-plugin/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/majamassarini/automate-knx-plugin/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/majamassarini/automate-knx-plugin/branch/main/graph/badge.svg)](https://codecov.io/gh/majamassarini/automate-knx-plugin)
 [![Documentation Status](https://readthedocs.org/projects/automate-knx-plugin/badge/?version=latest)](https://automate-knx-plugin.readthedocs.io/en/latest/?badge=latest)
 
 The **KNX** plugin for the [automate-home project](https://github.com/majamassarini/automate-home).
