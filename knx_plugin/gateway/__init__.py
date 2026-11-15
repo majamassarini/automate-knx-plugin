@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 from collections.abc import Callable, Iterable
-from typing import Any, Union
+from typing import Any, Optional, Union
 
 import home
 import knx_stack
@@ -59,6 +59,31 @@ class Gateway(home.protocol.Gateway):
 
         self.logger.info(self._association_table)
         self.logger.info(self._datapointtypes)
+
+    def _wrap_tasks(self, tasks: Iterable[Callable]):
+        return [
+            lambda msg, task=task: task(
+                self._with_group_addresses(self.make_trigger(msg))
+            )
+            for task in tasks
+        ]
+
+    def _with_group_addresses(self, description: Optional[Trigger]):
+        """
+        A description received from the bus knows only its ASAP: fill in
+        the group addresses associated with it, so it can be compared with
+        the addresses of the commands (e.g. to recognize an echo).
+        """
+        if description is not None:
+            tsaps = [
+                tsap
+                for asap in description.asaps
+                for tsap in self._association_table.get_tsaps(asap)
+            ]
+            description.addresses = self._association_table.get_addresses(
+                tsaps
+            )
+        return description
 
     def associate_commands(self, descriptions: Iterable[Description]) -> None:
         self._associate(descriptions)
